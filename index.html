@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080a0e">
+<title>GoldGuard Signals</title>
+<style>
+:root {
+  --bg:#080a0e;
+  --panel:#11151c;
+  --gold:#f5bd32;
+  --gold2:#ffe08a;
+  --muted:#929baa;
+  --green:#26d982;
+  --red:#ff5b65;
+  --border:#292f3a;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:#f5f6fa;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+header {
+  padding:25px 19px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo {
+  width:49px;height:49px;
+  border-radius:15px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#ffe18b,#b47b08);
+  color:#111;font-size:27px;font-weight:900;
+}
+.brand {font-size:21px;font-weight:900;letter-spacing:1px}
+.brand span {color:var(--gold)}
+.tagline {font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+.bell {margin-left:auto;font-size:23px}
+main {max-width:650px;margin:auto;padding:20px 16px 100px}
+.eyebrow {color:var(--gold);font-size:11px;letter-spacing:2px;font-weight:800}
+h1 {font-size:27px;margin:9px 0}
+.sub {color:var(--muted);font-size:13px;line-height:1.6}
+.status {
+  margin:19px 0;
+  background:#171c22;
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:13px;
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;
+}
+.dot {width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.status strong {color:var(--gold)}
+.card {
+  background:linear-gradient(145deg,#171b22,#0e1117);
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:18px;
+  margin:15px 0;
+}
+.card h2 {font-size:16px;margin:0 0 15px}
+.signal-top {display:flex;justify-content:space-between;align-items:center}
+.pair {font-size:23px;font-weight:900}
+.pair small {display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:4px}
+.pill {
+  color:var(--gold);border:1px solid #80611d;
+  border-radius:20px;padding:6px 10px;font-size:10px;
+}
+.wait {
+  font-size:34px;font-weight:900;color:var(--gold);
+  margin:23px 0 5px;
+}
+.grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;margin-top:18px;
+}
+.metric {
+  background:#0b0e13;border:1px solid var(--border);
+  border-radius:11px;padding:12px;
+}
+.metric label {display:block;color:var(--muted);font-size:11px}
+.metric strong {display:block;margin-top:7px;font-size:14px}
+.note {
+  color:var(--muted);font-size:12px;line-height:1.6;
+  margin-top:15px;
+}
+.section-title {
+  display:flex;justify-content:space-between;align-items:center;
+  margin:25px 0 12px;
+}
+.section-title h2 {font-size:17px;margin:0}
+.gold {color:var(--gold)}
+.market {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 3px;border-bottom:1px solid var(--border);
+}
+.market:last-child {border:0}
+.market small {display:block;color:var(--muted);margin-top:4px}
+.market b {font-size:14px}
+button {
+  font:inherit;cursor:pointer;
+}
+.action {
+  width:100%;padding:14px;border-radius:11px;
+  border:1px solid #9c741d;background:#30250e;
+  color:var(--gold2);font-weight:800;margin-top:15px;
+}
+nav {
+  position:fixed;bottom:0;left:0;right:0;
+  background:#10141c;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;
+  padding:10px 3px calc(10px + env(safe-area-inset-bottom));
+}
+nav button {
+  background:none;border:0;color:var(--muted);
+  font-size:11px;padding:5px;
+}
+nav button span {display:block;font-size:20px;margin-bottom:4px}
+nav button.active {color:var(--gold)}
+.page {display:none}
+.page.active {display:block}
+.feature {
+  border:1px solid var(--border);
+  padding:14px;border-radius:12px;margin:10px 0;
+}
+.feature b {color:var(--gold)}
+footer {text-align:center;color:#737d8c;font-size:11px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">♛</div>
+  <div>
+    <div class="brand">GOLD<span>GUARD</span></div>
+    <div class="tagline">SIGNALS • ANALYSE • CONFIRM</div>
+  </div>
+  <div class="bell">♧</div>
+</header>
+
+<main>
+<section class="page active" id="home">
+  <div class="eyebrow">WELCOME TO GOLDGUARD</div>
+  <h1>Trade with discipline.</h1>
+  <p class="sub">Premium market analysis. Quality setups. Risk first.</p>
+
+  <div class="status">
+    <span class="dot"></span>
+    <div><strong>PREVIEW MODE</strong><br>
+    Live market data not connected yet</div>
+  </div>
+
+  <div class="card">
+    <div class="signal-top">
+      <div class="pair">XAUUSD<small>GOLD / US DOLLAR</small></div>
+      <span class="pill">SIGNAL ENGINE</span>
+    </div>
+    <div class="wait">WAIT</div>
+    <div class="sub">No verified trading setup currently available.</div>
+    <div class="grid">
+      <div class="metric"><label>Entry</label><strong>Awaiting setup</strong></div>
+      <div class="metric"><label>Stop Loss</label><strong>Not set</strong></div>
+      <div class="metric"><label>Take Profit</label><strong>Not set</strong></div>
+      <div class="metric"><label>Risk per trade</label><strong>0.5% maximum</strong></div>
+    </div>
+    <p class="note">This is a development preview, not a live trading signal. GoldGuard will only publish a setup after its analysis and risk checks are implemented.</p>
+  </div>
+
+  <div class="section-title"><h2>Market watchlist</h2><span class="gold">01 / 03</span></div>
+  <div class="card">
+    <div class="market"><div><b>XAUUSD</b><small>Gold</small></div><b class="gold">Awaiting data</b></div>
+    <div class="market"><div><b>EURUSD</b><small>Euro / US Dollar</small></div><b class="gold">Coming soon</b></div>
+    <div class="market"><div><b>GBPUSD</b><small>Pound / US Dollar</small></div><b class="gold">Coming soon</b></div>
+  </div>
+</section>
+
+<section class="page" id="analysis">
+  <div class="eyebrow">INTELLIGENCE CENTRE</div>
+  <h1>Market Analysis</h1>
+  <p class="sub">Our multi-timeframe analysis framework.</p>
+  <div class="feature"><b>H1</b><p class="sub">Higher-timeframe market direction and structure.</p></div>
+  <div class="feature"><b>M15</b><p class="sub">Liquidity, order blocks and confirmation.</p></div>
+  <div class="feature"><b>M5</b><p class="sub">Entry confirmation and execution planning.</p></div>
+  <div class="feature"><b>M1</b><p class="sub">Optional entry refinement.</p></div>
+  <div class="feature"><b>SMC + ICT</b><p class="sub">Structure, liquidity and displacement analysis.</p></div>
+</section>
+
+<section class="page" id="news">
+  <div class="eyebrow">FUNDAMENTAL PROTECTION</div>
+  <h1>Economic News</h1>
+  <p class="sub">Major news events can cause volatility in gold and currency markets.</p>
+  <div class="card">
+    <h2 class="gold">News protection</h2>
+    <p class="sub">Economic calendar connection not configured yet.</p>
+    <p class="note">Planned: CPI, NFP, FOMC and other high-impact announcements. New entries will be blocked around major news events according to our safety rules.</p>
+  </div>
+</section>
+
+<section class="page" id="history">
+  <div class="eyebrow">PERFORMANCE CENTRE</div>
+  <h1>Signal History</h1>
+  <div class="card">
+    <h2>Our trading record</h2>
+    <p class="sub">No verified signals recorded yet.</p>
+    <p class="note">Only real, timestamped and independently tracked signal outcomes will appear here. No invented win rates or profit figures.</p>
+  </div>
+</section>
+
+<section class="page" id="profile">
+  <div class="eyebrow">GOLDGUARD ACCOUNT</div>
+  <h1>Settings</h1>
+  <div class="feature"><b>Risk management</b><p class="sub">Target risk: 0.5% per trade.</p></div>
+  <div class="feature"><b>Trading mode</b><p class="sub">Manual MT5 execution.</p></div>
+  <div class="feature"><b>Notifications</b><p class="sub">Notification service not connected yet.</p></div>
+  <div class="feature"><b>Version</b><p class="sub">GoldGuard Signals V1.0 – Development preview.</p></div>
+</section>
+
+<footer>GOLDGUARD SIGNALS • BUILT WITH DISCIPLINE 🦁</footer>
+</main>
+
+<nav>
+  <button class="active" data-page="home"><span>⌂</span>Home</button>
+  <button data-page="analysis"><span>⌁</span>Analysis</button>
+  <button data-page="news"><span>▤</span>News</button>
+  <button data-page="history"><span>◷</span>History</button>
+  <button data-page="profile"><span>♙</span>Profile</button>
+</nav>
+
+<script>
+document.querySelectorAll("nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".page").forEach(page =>
+      page.classList.remove("active")
+    );
+    document.querySelectorAll("nav button").forEach(item =>
+      item.classList.remove("active")
+    );
+    document.getElementById(button.dataset.page).classList.add("active");
+    button.classList.add("active");
+    window.scrollTo(0,0);
+  });
+});
+</script>
+</body>
+</html>
