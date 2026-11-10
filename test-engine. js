@@ -36,11 +36,30 @@
 
   if (!engine) {
 
-    console.table(results);
+  console.table(results);
 
-    return;
+  document.body.insertAdjacentHTML(
 
-  }
+    "beforeend",
+
+    "<pre>" +
+
+    results.map(item => item.test + ': ' + item.result).join('\n') +
+
+    "</pre>"
+
+  );
+
+  return;
+}
+
+
+
+    
+
+    
+
+
 
   test(
 
@@ -81,6 +100,17 @@
   );
 
   console.table(results);
+document.body.insertAdjacentHTML(
+
+  "beforeend",
+
+  "<pre id='goldguard-test-results'>" +
+
+  results.map(item => item.test + ': ' + item.result).join('\n') +
+
+  "</pre>"
+
+);
 
   const passed = results.filter(
 
