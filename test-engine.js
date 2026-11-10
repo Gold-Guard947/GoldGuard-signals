@@ -34,8 +34,84 @@
 
   );
 
-  if (!engine) {
+  if (!engine) {  
+// GOLDGUARD DATA ADAPTER TESTS V1.0
 
+  const adapter = window.GoldGuardDataAdapter;
+
+  test(
+
+    "Data adapter exists",
+
+    !!adapter &&
+
+    typeof adapter.convertCandles === "function"
+
+  );
+
+  const adapterResult = adapter
+
+    ? adapter.convertCandles([{
+
+        Timestamp: "2026.10.30 20:55:00",
+
+        Open: 100,
+
+        High: 102,
+
+        Low: 98,
+
+        Close: 101,
+
+        TickVolume: 500,
+
+        Spread: 240
+
+      }])
+
+    : null;
+
+  test(
+
+    "Adapter converts uppercase OHLC",
+
+    !!adapterResult &&
+
+    adapterResult.valid === true &&
+
+    adapterResult.candles[0].open === 100 &&
+
+    adapterResult.candles[0].close === 101
+
+  );
+
+  const invalidResult = adapter
+
+    ? adapter.convertCandles([{
+
+        Timestamp: "2026.10.30 20:55:00",
+
+        Open: 100,
+
+        High: 99,
+
+        Low: 98,
+
+        Close: 101
+
+      }])
+
+    : null;
+
+  test(
+
+    "Adapter rejects invalid OHLC",
+
+    !!invalidResult &&
+
+    invalidResult.valid === false
+
+  );
   console.table(results);
 
   document.body.insertAdjacentHTML(
