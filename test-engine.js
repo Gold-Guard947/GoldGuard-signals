@@ -33,8 +33,7 @@
     !!engine && typeof engine.analyze === "function"
 
   );
-
-  if (!engine) {  
+  
 // GOLDGUARD DATA ADAPTER TESTS V1.0
 
   const adapter = window.GoldGuardDataAdapter;
