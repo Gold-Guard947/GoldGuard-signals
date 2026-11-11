@@ -48,7 +48,7 @@
 
   );
 
-  const adapterResult = adapter
+  const adapterResult = adapter && typeof adapter.convertCandles === "function"
 
     ? adapter.convertCandles([{
 
@@ -84,7 +84,7 @@
 
   );
 
-  const invalidResult = adapter
+  const invalidResult = adapter && typeof adapter.convertCandles === "function"
 
     ? adapter.convertCandles([{
 
@@ -111,31 +111,9 @@
     invalidResult.valid === false
 
   );
-  console.table(results);
 
-  document.body.insertAdjacentHTML(
-
-    "beforeend",
-
-    "<pre>" +
-
-    results.map(item => item.test + ': ' + item.result).join('\n') +
-
-    "</pre>"
-
-  );
-
-  return;
-}
-
-
-
-    
-
-    
-
-
-
+ if (engine && typeof engine.analyze === "function") {
+ 
   test(
 
     "Correct version",
@@ -256,6 +234,8 @@
     engine.analyze(validMarketData).status === "WAIT"
 
   );
+
+   }
   console.table(results);
 document.body.insertAdjacentHTML(
 
