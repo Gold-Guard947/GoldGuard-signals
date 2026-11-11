@@ -32,17 +32,21 @@
 
     for (const candle of candles) {
 
-      if (!candle ||
+      if (
 
-          !candle.Timestamp ||
+        !candle ||
 
-          !Number.isFinite(candle.Open) ||
+        !candle.Timestamp ||
 
-          !Number.isFinite(candle.High) ||
+        !Number.isFinite(candle.Open) ||
 
-          !Number.isFinite(candle.Low) ||
+        !Number.isFinite(candle.High) ||
 
-          !Number.isFinite(candle.Close)) {
+        !Number.isFinite(candle.Low) ||
+
+        !Number.isFinite(candle.Close)
+
+      ) {
 
         return {
 
