@@ -1,14 +1,10 @@
-
-
 /*
 
- GOLDGUARD HISTORICAL INTEGRATION V1.0
+ GOLDGUARD HISTORICAL INTEGRATION V1.1
 
- Connects historical candle data to:
+ Connects validated historical candles to the signal engine.
 
- 1. Data Adapter
-
- 2. Signal Engine
+ Checks minimum candle counts, timestamps and chronological order.
 
  Historical data only.
 
@@ -22,6 +18,102 @@
 
   "use strict";
 
+  function wait(reason) {
+
+    return {
+
+      status: "WAIT",
+
+      reason: reason,
+
+      mode: "HISTORICAL DATA ONLY"
+
+    };
+
+  }
+
+  function parseTimestamp(value) {
+
+    if (typeof value !== "string") return null;
+
+    const match = value.match(
+
+      /^(\d{4})\.(\d{2})\.(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
+
+    );
+
+    if (!match) return null;
+
+    const parts = match.slice(1).map(Number);
+
+    const [year, month, day, hour, minute, second] = parts;
+
+    const date = new Date(Date.UTC(
+
+      year, month - 1, day, hour, minute, second
+
+    ));
+
+    if (
+
+      date.getUTCFullYear() !== year ||
+
+      date.getUTCMonth() !== month - 1 ||
+
+      date.getUTCDate() !== day ||
+
+      date.getUTCHours() !== hour ||
+
+      date.getUTCMinutes() !== minute ||
+
+      date.getUTCSeconds() !== second
+
+    ) return null;
+
+    return date.getTime();
+
+  }
+
+  function validateTimeframe(candles, minimum, name) {
+
+    if (!Array.isArray(candles) || candles.length < minimum) {
+
+      return name + " has insufficient candles";
+
+    }
+
+    let previousTime = null;
+
+    for (const candle of candles) {
+
+      const currentTime = parseTimestamp(candle.timestamp);
+
+      if (currentTime === null) {
+
+        return name + " contains an invalid timestamp";
+
+      }
+
+      if (
+
+        previousTime !== null &&
+
+        currentTime <= previousTime
+
+      ) {
+
+        return name + " candles are not in chronological order";
+
+      }
+
+      previousTime = currentTime;
+
+    }
+
+    return null;
+
+  }
+
   function analyzeHistoricalData(data) {
 
     const adapter = window.GoldGuardDataAdapter;
@@ -30,25 +122,13 @@
 
     if (!adapter || !engine) {
 
-      return {
-
-        status: "WAIT",
-
-        reason: "GoldGuard components missing"
-
-      };
+      return wait("GoldGuard components missing");
 
     }
 
     if (!data || typeof data !== "object") {
 
-      return {
-
-        status: "WAIT",
-
-        reason: "Historical data missing"
-
-      };
+      return wait("Historical data missing");
 
     }
 
@@ -62,25 +142,13 @@
 
     ) {
 
-      return {
-
-        status: "WAIT",
-
-        reason: "Required timeframes missing"
-
-      };
+      return wait("Required timeframes missing");
 
     }
 
     if (typeof data.newsBlocked !== "boolean") {
 
-      return {
-
-        status: "WAIT",
-
-        reason: "News status not verified"
-
-      };
+      return wait("News status not verified");
 
     }
 
@@ -92,13 +160,25 @@
 
     if (!h1.valid || !m15.valid || !m5.valid) {
 
-      return {
+      return wait("Historical candle validation failed");
 
-        status: "WAIT",
+    }
 
-        reason: "Historical candle validation failed"
+    const checks = [
 
-      };
+      validateTimeframe(h1.candles, 50, "H1"),
+
+      validateTimeframe(m15.candles, 12, "M15"),
+
+      validateTimeframe(m5.candles, 3, "M5")
+
+    ];
+
+    const failedCheck = checks.find(reason => reason !== null);
+
+    if (failedCheck) {
+
+      return wait(failedCheck);
 
     }
 
@@ -113,6 +193,12 @@
       newsBlocked: data.newsBlocked
 
     });
+
+    if (!result || typeof result.status !== "string") {
+
+      return wait("Signal engine returned an invalid result");
+
+    }
 
     return {
 
@@ -132,16 +218,12 @@
 
     analyze: analyzeHistoricalData,
 
-    version: "1.0",
+    version: "1.1",
 
     mode: "HISTORICAL ONLY"
 
   };
 
-  console.log(
+  console.log("GoldGuard Historical Integration V1.1 loaded.");
 
-    "GoldGuard Historical Integration V1.0 loaded."
-
-  );
-
-})()
+})();
