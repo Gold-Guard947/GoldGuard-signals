@@ -1,10 +1,14 @@
 /*
 
- GOLDGUARD DASHBOARD CONNECTION V1.0
+ GOLDGUARD DASHBOARD CONNECTION V1.1
 
- Connects dashboard to GoldGuard Signal Engine.
+ Connects dashboard through Historical Integration.
 
- No fabricated market data. No trade execution.
+ Historical data only.
+
+ No fabricated prices.
+
+ No trade execution.
 
 */
 
@@ -22,7 +26,9 @@
 
   }
 
-  function render(result) {
+  function render(response) {
+
+    const result = response.result || response;
 
     const signal = document.querySelector(".wait");
 
@@ -40,13 +46,15 @@
 
     }
 
-    signal.textContent = result.status;
+    signal.textContent = result.status || "WAIT";
 
-    reason.textContent = result.status === "WAIT"
+    reason.textContent =
 
-      ? result.reason
+      result.status === "WAIT"
 
-      : "Engine conditions confirmed. Demo analysis only.";
+        ? result.reason || response.reason || "No verified setup"
+
+        : "Engine conditions confirmed. Demo analysis only.";
 
     metrics[0].textContent = formatPrice(result.entry);
 
@@ -56,15 +64,23 @@
 
     metrics[3].textContent =
 
-      result.riskPercent + "% maximum";
+      Number.isFinite(result.riskPercent)
+
+        ? result.riskPercent + "% maximum"
+
+        : "0.5% maximum";
 
   }
 
   function start() {
 
-    if (!window.GoldGuardEngine) {
+    if (!window.GoldGuardHistoricalIntegration) {
 
-      console.error("GoldGuard Engine not found.");
+      console.error(
+
+        "GoldGuard Historical Integration not found."
+
+      );
 
       return;
 
@@ -74,25 +90,29 @@
 
       update: function (data) {
 
-        const result = window.GoldGuardEngine.analyze(data);
+        const response =
 
-        render(result);
+          window.GoldGuardHistoricalIntegration.analyze(data);
 
-        return result;
+        render(response);
+
+        return response;
 
       }
 
     };
 
-    // No market data connected yet.
+    // Safe initial state.
 
-    // Safely display WAIT until verified data is supplied.
+    // No market data is fabricated or assumed.
 
     window.GoldGuardDashboard.update({});
 
-    
+    console.log(
 
-    console.log("GoldGuard Dashboard V1.0 connected.");
+      "GoldGuard Dashboard V1.1 connected."
+
+    );
 
   }
 
