@@ -1,8 +1,10 @@
+
+
 /*
 
- GOLDGUARD DASHBOARD CONNECTION V1.1
+ GOLDGUARD DASHBOARD CONNECTION V1.2
 
- Connects dashboard through Historical Integration.
+ Connects dashboard to historical market data.
 
  Historical data only.
 
@@ -54,7 +56,7 @@
 
         ? result.reason || response.reason || "No verified setup"
 
-        : "Engine conditions confirmed. Demo analysis only.";
+        : "Historical analysis only. Demo testing.";
 
     metrics[0].textContent = formatPrice(result.entry);
 
@@ -76,11 +78,7 @@
 
     if (!window.GoldGuardHistoricalIntegration) {
 
-      console.error(
-
-        "GoldGuard Historical Integration not found."
-
-      );
+      console.error("Historical Integration missing.");
 
       return;
 
@@ -98,19 +96,55 @@
 
         return response;
 
+      },
+
+      loadHistorical: async function (from, to, newsBlocked) {
+
+        const marketData = window.GoldGuardMarketData;
+
+        if (!marketData) {
+
+          return {
+
+            valid: false,
+
+            reason: "Market data module missing"
+
+          };
+
+        }
+
+        const response =
+
+          await marketData.fetchAndAnalyze(
+
+            from,
+
+            to,
+
+            newsBlocked
+
+          );
+
+        if (!response.valid) {
+
+          return response;
+
+        }
+
+        render(response.analysis);
+
+        return response;
+
       }
 
     };
-
-    // Safe initial state.
-
-    // No market data is fabricated or assumed.
 
     window.GoldGuardDashboard.update({});
 
     console.log(
 
-      "GoldGuard Dashboard V1.1 connected."
+      "GoldGuard Dashboard V1.2 connected."
 
     );
 
@@ -126,4 +160,4 @@
 
   }
 
-})();
+})()
