@@ -200,17 +200,19 @@
 
     }
 
-    return {
+   return {
 
-      status: result.status,
+  status: result.status,
 
-      result: result,
+  reason: result.reason,
 
-      mode: "HISTORICAL DATA ONLY",
+  result: result,
 
-      symbol: data.symbol || "XAUUSD"
+  mode: "HISTORICAL DATA ONLY",
 
-    };
+  symbol: data.symbol || "XAUUSD"
+
+};
 
   }
 
