@@ -1,16 +1,14 @@
-
-
 /*
 
  GOLDGUARD DASHBOARD CONNECTION V1.3
 
- Connects dashboard to historical market data
+ Historical market data connection.
 
- and activates the Historical Data Test button.
+ Historical Data Test button.
+
+ News Block OFF for controlled research.
 
  Historical data only.
-
- No fabricated prices.
 
  No live trading.
 
@@ -86,17 +84,9 @@
 
     );
 
-    const fromInput = document.getElementById(
+    const fromInput = document.getElementById("test-from");
 
-      "test-from"
-
-    );
-
-    const toInput = document.getElementById(
-
-      "test-to"
-
-    );
+    const toInput = document.getElementById("test-to");
 
     const status = document.getElementById(
 
@@ -142,6 +132,8 @@
 
       try {
 
+        const newsBlocked = false;
+
         const response =
 
           await window.GoldGuardDashboard.loadHistorical(
@@ -150,7 +142,7 @@
 
             to,
 
-            true
+            newsBlocked
 
           );
 
@@ -206,7 +198,11 @@
 
           reason +
 
-          " News block was forced ON. Historical data only; not a live signal.";
+          ". News block: " +
+
+          (newsBlocked ? "ON" : "OFF") +
+
+          ". Historical data only; not a live signal.";
 
       } catch (error) {
 
@@ -294,11 +290,7 @@
 
     window.GoldGuardDashboard.update({});
 
-    console.log(
-
-      "GoldGuard Dashboard V1.3 connected."
-
-    );
+    console.log("GoldGuard Dashboard V1.3 connected.");
 
   }
 
