@@ -58,4 +58,4 @@ jobs:
 
           test -f test-backtest-engine.js
 
-          echo "Backtest files found successfully.
+          echo Backtest files found successfully.
