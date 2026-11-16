@@ -1,0 +1,61 @@
+
+
+name: GoldGuard Backtest Tests
+
+on:
+
+  push:
+
+    branches:
+
+      - backtest-v1.1
+
+  workflow_dispatch:
+
+jobs:
+
+  backtest-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout development branch
+
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+
+        uses: actions/setup-node@v4
+
+        with:
+
+          node-version: 20
+
+      - name: Check JavaScript syntax
+
+        run: |
+
+          node --check data-adapter.js
+
+          node --check signal-engine.js
+
+          node --check historical-integration.js
+
+          node --check backtest-engine.js
+
+          node --check test-engine.js
+
+          node --check test-historical-integration.js
+
+          node --check test-backtest-engine.js
+
+      - name: Confirm backtest engine files exist
+
+        run: |
+
+          test -f backtest-engine.js
+
+          test -f test-backtest-engine.js
+
+          echo "Backtest files found successfully.
