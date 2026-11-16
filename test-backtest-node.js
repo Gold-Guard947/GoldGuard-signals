@@ -36,6 +36,10 @@
 
 "use strict";
 
+global.window = global;
+
+require("./backtest-engine.js");
+
 const assert = require("assert");
 
 console.log("\nGOLDGUARD NODE BACKTEST TESTS V1.0");
