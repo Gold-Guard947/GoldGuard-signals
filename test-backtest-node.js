@@ -444,9 +444,15 @@ test("Unfinished trade remains open", function () {
 
 });
 
-// Test 8: WAIT signals do not create trades.
+// Test 8: WAIT signals never open trades.
 
 test("WAIT signals never open trades", function () {
+
+  // Build historical data first.
+
+  const data = makeData("BUY", "OPEN");
+
+  // Override the BUY integration with WAIT.
 
   window.GoldGuardHistoricalIntegration = {
 
@@ -461,8 +467,6 @@ test("WAIT signals never open trades", function () {
     }
 
   };
-
-  const data = makeData("BUY", "OPEN");
 
   const result = window.GoldGuardBacktest.run(data);
 
