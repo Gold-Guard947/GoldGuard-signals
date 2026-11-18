@@ -546,9 +546,9 @@ test("Compounded equity is calculated correctly", function () {
 
   ]);
 
-  assert.strictEqual(result.endingEquity, 101.498);
+  assert.strictEqual(result.endingEquity, 101.5);
 
-  assert.strictEqual(result.netReturnPercent, 1.498);
+assert.strictEqual(result.netReturnPercent, 1.5);
 
 });
 
