@@ -33,6 +33,7 @@ jobs:
           node --check test-backtest-node.js
           node --check test-backtest-engine-v1.2.js
           node --check test-backtest-advanced.js
+          node --check test-end-to-end.js
 
       - name: Confirm backtest files exist
         run: |
@@ -41,6 +42,7 @@ jobs:
           test -f test-backtest-node.js
           test -f test-backtest-engine-v1.2.js
           test -f test-backtest-advanced.js
+          test -f test-end-to-end.js
           echo "Backtest files found successfully."
 
       - name: Run Node.js backtest tests
@@ -48,3 +50,4 @@ jobs:
           node test-backtest-node.js
           node test-backtest-engine-v1.2.js
           node test-backtest-advanced.js
+          node test-end-to-end.js
