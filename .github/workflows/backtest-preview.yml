@@ -28,6 +28,7 @@ jobs:
           node --check signal-engine.js
           node --check historical-integration.js
           node --check backtest-engine.js
+          node --check execution-cost.js
           node --check test-engine.js
           node --check test-historical-integration.js
           node --check test-backtest-engine.js
@@ -36,6 +37,7 @@ jobs:
           node --check test-backtest-advanced.js
           node --check test-end-to-end.js
           node --check test-full-backtest-integration.js
+          node --check test-execution-cost.js
 
       - name: Confirm backtest files exist
         run: |
@@ -46,6 +48,8 @@ jobs:
           test -f test-backtest-advanced.js
           test -f test-end-to-end.js
           test -f test-full-backtest-integration.js
+          test -f execution-cost.js
+          test -f test-execution-cost.js
           echo "Backtest files found successfully."
 
       - name: Run Node.js backtest tests
@@ -55,3 +59,4 @@ jobs:
           node test-backtest-advanced.js
           node test-end-to-end.js
           node test-full-backtest-integration.js
+          node test-execution-cost.js
