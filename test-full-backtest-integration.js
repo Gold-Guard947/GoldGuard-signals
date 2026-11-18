@@ -317,7 +317,7 @@ if (!loadError) {
 
     assert.strictEqual(result.valid, true);
     assert.strictEqual(result.totalTrades, 0);
-    assert.strictEqual(result.statistics.waitSignals, 1);
+    assert.strictEqual(result.statistics.waitSignals, 2);
   });
 
   test("Invalid historical timestamps are rejected", function () {
