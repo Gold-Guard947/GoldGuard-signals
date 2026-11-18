@@ -328,6 +328,7 @@ function simulate(direction, exitMode) {
 
 }
 
+
 // Test 1: Engine availability.
 
 test("Backtest engine loads correctly", function () {
@@ -335,19 +336,13 @@ test("Backtest engine loads correctly", function () {
   assert.ok(window.GoldGuardBacktest);
 
   assert.strictEqual(
-
     window.GoldGuardBacktest.version,
-
-    "1.0"
-
+    "1.1"
   );
 
   assert.strictEqual(
-
     typeof window.GoldGuardBacktest.run,
-
     "function"
-
   );
 
 });
