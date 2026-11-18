@@ -352,7 +352,7 @@ test("Backtest engine loads correctly", function () {
 
     window.GoldGuardBacktest.version,
 
-    "1.0"
+    "1.1"
 
   );
 
