@@ -184,12 +184,12 @@ function makeHistoricalData(overrides) {
 
   m5.push(
     makeCandle(
-      new Date(target.getTime() + 900000),
-      107,
-      126,
-      106,
-      124
-    )
+  new Date(target.getTime() + 900000),
+  108,
+  130,
+  107,
+  129
+)
   );
 
   return Object.assign({
@@ -259,17 +259,18 @@ if (!loadError) {
     assert.strictEqual(result.mode, "HISTORICAL SIMULATION ONLY");
   });
 
-  test("Real signal engine opens a BUY trade", function () {
+  test("Real signal engine opens a BUY trade at next candle open", function () {
 
-    const result =
-      context.window.GoldGuardBacktest.run(
-        makeHistoricalData()
-      );
+  const result =
+    context.window.GoldGuardBacktest.run(
+      makeHistoricalData()
+    );
 
-    assert.strictEqual(result.valid, true);
-    assert.strictEqual(result.totalTrades, 1);
-    assert.strictEqual(result.trades[0].direction, "BUY");
-  });
+  assert.strictEqual(result.valid, true);
+  assert.strictEqual(result.totalTrades, 1);
+  assert.strictEqual(result.trades[0].direction, "BUY");
+  assert.strictEqual(result.trades[0].entry, 108);
+});
 
   test("Historical BUY trade reaches take profit", function () {
 
@@ -279,7 +280,7 @@ if (!loadError) {
       );
 
     assert.strictEqual(result.trades[0].outcome, "WIN");
-    assert.strictEqual(result.trades[0].exitPrice, 125);
+    assert.strictEqual(result.trades[0].exitPrice, 128);
     assert.strictEqual(result.statistics.wins, 1);
     assert.strictEqual(result.statistics.losses, 0);
   });
