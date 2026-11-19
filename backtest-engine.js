@@ -340,20 +340,32 @@
       return result;
     }
 
-    function calculateCommission(action) {
+function calculateCommission(action) {
 
-      const amount = costCalculator.calculateCommission(
-        lots,
-        costSettings,
-        action
-      );
+  const result = costCalculator.calculateCommission(
+    lots,
+    costSettings,
+    action
+  );
 
-      if (!Number.isFinite(amount) || amount < 0) {
-        throw new Error("Invalid calculated commission");
-      }
+  if (
+    !result ||
+    result.valid !== true ||
+    !Number.isFinite(result.commission) ||
+    result.commission < 0
+  ) {
+    throw new Error("Invalid calculated commission");
+  }
 
-      return amount;
-    }
+  if (
+    result.currency !== costConfig.commissionCurrency
+  ) {
+    throw new Error("Commission currency mismatch");
+  }
+
+  return result.commission;
+}
+
 
     const trades = [];
 
