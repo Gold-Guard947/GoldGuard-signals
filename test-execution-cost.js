@@ -80,9 +80,9 @@ test("Execution cost component loads correctly", function () {
 
 // TEST 2: Version verification.
 
-test("Execution cost version is 1.2", function () {
+test("Execution cost version is 1.3", function () {
 
-  assert.strictEqual(cost.version, "1.2");
+  assert.strictEqual(cost.version, "1.3");
 
 });
 
