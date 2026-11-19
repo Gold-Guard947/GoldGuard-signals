@@ -1,6 +1,7 @@
+
 /*
 
- GOLDGUARD ADVANCED BACKTEST TESTS V1.1
+ GOLDGUARD ADVANCED BACKTEST TESTS V1.2
 
  Advanced historical simulation validation.
 
@@ -33,14 +34,17 @@ const assert = require("assert");
 
 global.window = global;
 
+// Load browser-compatible components in the correct order.
+
 require("./data-adapter.js");
+require("./execution-cost.js");
 require("./backtest-engine.js");
 
 let passed = 0;
 let failed = 0;
 
 console.log("\n==================================");
-console.log(" GOLDGUARD ADVANCED TESTS V1.1");
+console.log(" GOLDGUARD ADVANCED TESTS V1.2");
 console.log("==================================");
 
 function test(name, callback) {
@@ -118,8 +122,8 @@ function makeData(plans) {
       const plan = plans[index];
 
       if (plan.outcome === "TP") {
-        high = plan.direction === "BUY" ? 102 : 100.5;
-        low = plan.direction === "SELL" ? 98 : 99.5;
+        high = plan.direction === "BUY" ? 102.1 : 100.5;
+        low = plan.direction === "SELL" ? 97.9 : 99.5;
       }
 
       if (plan.outcome === "SL") {
@@ -128,8 +132,8 @@ function makeData(plans) {
       }
 
       if (plan.outcome === "BOTH") {
-        high = 102;
-        low = 98;
+        high = 102.1;
+        low = 97.9;
       }
     }
 
@@ -169,7 +173,20 @@ function makeData(plans) {
     h1,
     m15,
     m5,
-    newsBlocked: false
+    newsBlocked: false,
+
+    executionCosts: {
+      broker: "TEST BROKER",
+      account: "TEST",
+      symbol: "XAUUSD",
+      pointSize: 0.01,
+      spreadPoints: 2,
+      slippagePoints: 0,
+      commissionPerLot: 0,
+      commissionCurrency: "USD",
+      commissionMode: "ROUND_TURN",
+      lots: 0.01
+    }
   };
 }
 
@@ -205,6 +222,7 @@ test("Missing historical data is rejected", function () {
 });
 
 // TEST 3: Missing integration.
+
 test("Missing historical integration is rejected", function () {
   const data = makeData([]);
   const original = window.GoldGuardHistoricalIntegration;
@@ -316,7 +334,6 @@ test("Zero entry price is rejected", function () {
 test("Duplicate historical timestamps are rejected", function () {
   const data = makeData([]);
 
-  // Create a duplicate timestamp.
   data.h1[1].Timestamp = data.h1[0].Timestamp;
 
   const result = window.GoldGuardBacktest.run(data);
@@ -334,7 +351,6 @@ test("Future M5 candle is excluded from signal analysis", function () {
   const lastTime = Date.UTC(2025, 0, 1) +
     (originalLength - 1) * 300000;
 
-  // Add a future candle.
   data.m5.push(candle(
     lastTime + 300000,
     100, 105, 95, 100
@@ -423,7 +439,9 @@ test("Three consecutive losses compound correctly", function () {
     sell("SL")
   ]);
 
-  assert.strictEqual(result.endingEquity, 98.507);
+  assert.ok(
+    Math.abs(result.endingEquity - 98.5075) < 0.0001
+  );
 });
 
 // TEST 16: Consecutive loss drawdown.
@@ -435,9 +453,8 @@ test("Three consecutive losses produce correct drawdown", function () {
     sell("SL")
   ]);
 
-  assert.strictEqual(
-    result.maxDrawdownPercent,
-    1.493
+  assert.ok(
+    Math.abs(result.maxDrawdownPercent - 1.4925) < 0.0001
   );
 });
 
@@ -452,7 +469,10 @@ test("Three consecutive wins compound correctly", function () {
 
   assert.strictEqual(result.totalTrades, 3);
   assert.strictEqual(result.statistics.wins, 3);
-  assert.strictEqual(result.endingEquity, 103.03);
+
+  assert.ok(
+    Math.abs(result.endingEquity - 103.0301) < 0.0001
+  );
 });
 
 // TEST 18: Open trade protection.
@@ -492,7 +512,7 @@ test("Invalid timeframe data is rejected", function () {
 // FINAL REPORT.
 
 console.log("\n==================================");
-console.log(" GOLDGUARD ADVANCED TEST REPORT");
+console.log(" GOLDGUARD ADVANCED TEST REPORT V1.2");
 console.log("==================================");
 
 console.log("PASSED:", passed);
