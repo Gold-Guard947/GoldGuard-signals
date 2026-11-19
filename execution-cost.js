@@ -1,16 +1,18 @@
 
 /*
 
- GOLDGUARD EXECUTION COST MODEL V1.2
+ GOLDGUARD EXECUTION COST MODEL V1.3
 
  Historical execution-cost calculator.
 
  Features:
- - MT5 spread points to price conversion.
+ - Configurable MT5 symbol point size.
+ - Historical spread override per execution.
  - Bid-based historical execution.
  - Correct BUY and SELL entry/exit pricing.
  - Configurable adverse slippage.
- - Configurable commission.
+ - PER_SIDE and ROUND_TURN commission.
+ - Strict cost-setting validation.
 
  Historical simulation only.
  No live prices.
@@ -22,13 +24,14 @@
 
   "use strict";
 
-  const VERSION = "1.2";
+  const VERSION = "1.3";
 
   const DEFAULT_PROFILE = {
     broker: "Exness",
     account: "Standard",
     commissionPerLot: 0,
-    commissionCurrency: "USD"
+    commissionCurrency: "USD",
+    commissionMode: "ROUND_TURN"
   };
 
   function validPositive(value) {
@@ -52,6 +55,10 @@
     const spreadPoints = config.spreadPoints;
     const slippagePoints = config.slippagePoints;
     const commissionPerLot = config.commissionPerLot;
+
+    const commissionMode =
+      config.commissionMode ||
+      DEFAULT_PROFILE.commissionMode;
 
     if (!validPositive(pointSize)) {
       return {
@@ -81,12 +88,25 @@
       };
     }
 
+    if (
+      commissionMode !== "PER_SIDE" &&
+      commissionMode !== "ROUND_TURN"
+    ) {
+      return {
+        valid: false,
+        reason: "Invalid commission mode"
+      };
+    }
+
     return {
+
       valid: true,
 
       broker: config.broker || DEFAULT_PROFILE.broker,
 
       account: config.account || DEFAULT_PROFILE.account,
+
+      symbol: config.symbol || null,
 
       pointSize: pointSize,
 
@@ -100,9 +120,12 @@
         config.commissionCurrency ||
         DEFAULT_PROFILE.commissionCurrency,
 
+      commissionMode: commissionMode,
+
       spreadPrice: spreadPoints * pointSize,
 
       slippagePrice: slippagePoints * pointSize
+
     };
 
   }
@@ -111,7 +134,8 @@
     action,
     direction,
     bidPrice,
-    settings
+    settings,
+    spreadPointsOverride
   ) {
 
     if (!settings || settings.valid !== true) {
@@ -148,14 +172,29 @@
       };
     }
 
-    const spread = settings.spreadPrice;
-    const slippage = settings.slippagePrice;
+    const spreadPoints =
+      spreadPointsOverride === undefined
+        ? settings.spreadPoints
+        : spreadPointsOverride;
 
-    let executionPrice;
+    if (!validNonNegative(spreadPoints)) {
+      return {
+        valid: false,
+        reason: "Invalid execution spread points"
+      };
+    }
+
+    const spread =
+      spreadPoints * settings.pointSize;
+
+    const slippage =
+      settings.slippagePrice;
 
     const usesAsk =
       (action === "ENTRY" && direction === "BUY") ||
       (action === "EXIT" && direction === "SELL");
+
+    let executionPrice;
 
     if (usesAsk) {
 
@@ -177,6 +216,7 @@
     }
 
     return {
+
       valid: true,
 
       action: action,
@@ -191,18 +231,31 @@
         executionPrice.toFixed(10)
       ),
 
+      spreadPoints: spreadPoints,
+
+      spreadPrice: spread,
+
       spreadCost: usesAsk ? spread : 0,
+
+      slippagePoints: settings.slippagePoints,
 
       slippageCost: slippage,
 
       commissionPerLot: settings.commissionPerLot,
 
-      commissionCurrency: settings.commissionCurrency
+      commissionCurrency: settings.commissionCurrency,
+
+      commissionMode: settings.commissionMode
+
     };
 
   }
 
-  function calculateCommission(lots, settings) {
+  function calculateCommission(
+    lots,
+    settings,
+    action
+  ) {
 
     if (!settings || settings.valid !== true) {
       return {
@@ -218,19 +271,69 @@
       };
     }
 
-    const commission =
-      lots * settings.commissionPerLot;
+    if (
+      action !== undefined &&
+      action !== "ENTRY" &&
+      action !== "EXIT"
+    ) {
+      return {
+        valid: false,
+        reason: "Invalid commission action"
+      };
+    }
+
+    let commission = 0;
+
+    if (settings.commissionMode === "PER_SIDE") {
+
+      if (!action) {
+        return {
+          valid: false,
+          reason: "ENTRY or EXIT required for per-side commission"
+        };
+      }
+
+      commission =
+        lots * settings.commissionPerLot;
+
+    } else if (
+      settings.commissionMode === "ROUND_TURN"
+    ) {
+
+      // Charge the complete round-turn commission on EXIT.
+      // Without an action, return the full trade commission
+      // for backward compatibility with the V1.2 calculator.
+
+      if (!action || action === "EXIT") {
+        commission =
+          lots * settings.commissionPerLot;
+      }
+
+    } else {
+
+      return {
+        valid: false,
+        reason: "Invalid commission mode"
+      };
+
+    }
 
     return {
+
       valid: true,
 
       lots: lots,
+
+      action: action || "ROUND_TURN",
+
+      mode: settings.commissionMode,
 
       commission: Number(
         commission.toFixed(8)
       ),
 
       currency: settings.commissionCurrency
+
     };
 
   }
@@ -252,7 +355,7 @@
   };
 
   console.log(
-    "GoldGuard Execution Cost Model V1.2 loaded."
+    "GoldGuard Execution Cost Model V1.3 loaded."
   );
 
 })();
