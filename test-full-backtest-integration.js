@@ -1,14 +1,15 @@
 
 /*
 
- GOLDGUARD FULL BACKTEST INTEGRATION TEST V1.0
+ GOLDGUARD FULL BACKTEST INTEGRATION TEST V1.2
 
  Tests the REAL production components:
 
  - Data Adapter V1.1
  - Signal Engine V1.0
  - Historical Integration V1.2
- - Backtest Engine V1.0
+ - Execution Cost Model V1.3
+ - Backtest Engine V1.2
 
  Uses controlled historical candles.
 
@@ -180,16 +181,16 @@ function makeHistoricalData(overrides) {
     )
   );
 
-  // The next candle reaches the BUY take profit.
+  // The final candle reaches the adjusted BUY take profit.
 
   m5.push(
     makeCandle(
-  new Date(target.getTime() + 900000),
-  108,
-  130,
-  107,
-  129
-)
+      new Date(target.getTime() + 900000),
+      108,
+      130,
+      107,
+      129
+    )
   );
 
   return Object.assign({
@@ -197,21 +198,41 @@ function makeHistoricalData(overrides) {
     h1: h1,
     m15: m15,
     m5: m5,
-    newsBlocked: false
+    newsBlocked: false,
+
+    // V1.2 execution-cost configuration.
+
+    executionCosts: {
+      broker: "TEST BROKER",
+      account: "TEST",
+      symbol: "XAUUSD",
+      pointSize: 0.01,
+      spreadPoints: 10,
+      slippagePoints: 0,
+      commissionPerLot: 0,
+      commissionCurrency: "USD",
+      commissionMode: "ROUND_TURN",
+      lots: 0.01
+    }
+
   }, overrides || {});
 }
 
 console.log("");
-console.log("GOLDGUARD FULL BACKTEST INTEGRATION TEST");
+console.log("GOLDGUARD FULL BACKTEST INTEGRATION TEST V1.2");
 console.log("---------------------------------------");
 
 let loadError = null;
 
 try {
+  // Load production components in dependency order.
+
   loadFile("data-adapter.js");
   loadFile("signal-engine.js");
   loadFile("historical-integration.js");
+  loadFile("execution-cost.js");
   loadFile("backtest-engine.js");
+
 } catch (error) {
   loadError = error;
   console.error("FILE LOAD ERROR: " + error.message);
@@ -240,6 +261,10 @@ if (!loadError) {
     );
   });
 
+  test("Real execution cost model is loaded", function () {
+    assert.ok(context.window.GoldGuardExecutionCost);
+  });
+
   test("Real backtest engine is loaded", function () {
     assert.strictEqual(
       typeof context.window.GoldGuardBacktest.run,
@@ -261,16 +286,20 @@ if (!loadError) {
 
   test("Real signal engine opens a BUY trade at next candle open", function () {
 
-  const result =
-    context.window.GoldGuardBacktest.run(
-      makeHistoricalData()
-    );
+    const result =
+      context.window.GoldGuardBacktest.run(
+        makeHistoricalData()
+      );
 
-  assert.strictEqual(result.valid, true);
-  assert.strictEqual(result.totalTrades, 1);
-  assert.strictEqual(result.trades[0].direction, "BUY");
-  assert.strictEqual(result.trades[0].entry, 108);
-});
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.totalTrades, 1);
+    assert.strictEqual(result.trades[0].direction, "BUY");
+
+    // BUY execution includes the historical spread.
+    assert.ok(
+      Math.abs(result.trades[0].entry - 108.10) < 0.0001
+    );
+  });
 
   test("Historical BUY trade reaches take profit", function () {
 
@@ -279,10 +308,18 @@ if (!loadError) {
         makeHistoricalData()
       );
 
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.totalTrades, 1);
     assert.strictEqual(result.trades[0].outcome, "WIN");
-    assert.strictEqual(result.trades[0].exitPrice, 128);
+
     assert.strictEqual(result.statistics.wins, 1);
     assert.strictEqual(result.statistics.losses, 0);
+
+    // The actual target is recalculated using
+    // the spread-adjusted entry price.
+    assert.ok(
+      result.trades[0].exitPrice > 128
+    );
   });
 
   test("Risk remains at 0.5 percent", function () {
@@ -293,8 +330,14 @@ if (!loadError) {
       );
 
     assert.strictEqual(result.riskPercent, 0.5);
-    assert.strictEqual(result.trades[0].rMultiple, 2);
-    assert.strictEqual(result.trades[0].profitPercent, 1);
+
+    assert.ok(
+      Math.abs(result.trades[0].rMultiple - 2) < 0.0001
+    );
+
+    assert.ok(
+      Math.abs(result.trades[0].profitPercent - 1) < 0.0001
+    );
   });
 
   test("Ending equity reflects the winning trade", function () {
@@ -305,8 +348,14 @@ if (!loadError) {
       );
 
     assert.strictEqual(result.startingEquity, 100);
-    assert.strictEqual(result.endingEquity, 101);
-    assert.strictEqual(result.netReturnPercent, 1);
+
+    assert.ok(
+      Math.abs(result.endingEquity - 101) < 0.0001
+    );
+
+    assert.ok(
+      Math.abs(result.netReturnPercent - 1) < 0.0001
+    );
   });
 
   test("News protection prevents trade entry", function () {
