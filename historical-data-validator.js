@@ -5,6 +5,19 @@
 
  Independent historical candle validation component.
 
+ Features:
+ - H1, M15 and M5 timeframe validation.
+ - OHLC structure validation.
+ - Timestamp validation.
+ - Duplicate timestamp detection.
+ - Chronological ordering validation.
+ - Missing candle detection.
+ - Weekend market closure recognition.
+ - Configurable market holiday recognition.
+ - Spread validation.
+ - Tick volume validation.
+ - Null candle protection.
+
  Historical data only.
  No live market feed.
  No trade execution.
@@ -35,7 +48,6 @@
     },
 
     marketClosures: [],
-
     maxGapChecks: 100000,
 
     spread: {
@@ -234,11 +246,15 @@
       return true;
     }
 
-    // Sunday before market opening.
+    // Sunday remains closed through the configured
+    // opening-hour boundary.
+    //
+    // Candle timestamps are treated as closing
+    // timestamps for this boundary convention.
 
     if (
       day === 0 &&
-      hour < config.weekendClosure.sundayOpenHour
+      hour <= config.weekendClosure.sundayOpenHour
     ) {
       return true;
     }
@@ -507,8 +523,6 @@
 
       const current = candles[i];
 
-      // Protect against null and non-object candles.
-
       if (!isObject(current)) {
         continue;
       }
@@ -589,8 +603,6 @@
       const previous = candles[i - 1];
       const current = candles[i];
 
-      // Safety checks.
-
       if (
         !isObject(previous) ||
         !isObject(current)
@@ -642,9 +654,6 @@
 
         }
 
-        // Count only intervals where the market
-        // was expected to be open.
-
         if (isMarketClosed(timestamp, config)) {
 
           closedIntervals++;
@@ -660,8 +669,6 @@
       }
 
 
-      // Record only genuine missing trading intervals.
-
       if (missing > 0) {
 
         expectedMissing += missing;
@@ -669,13 +676,9 @@
         gaps.push({
 
           afterCandle: i - 1,
-
           beforeCandle: i,
-
           missingCandles: missing,
-
           closedIntervals: closedIntervals,
-
           classification: "UNEXPLAINED GAP"
 
         });
@@ -691,19 +694,12 @@
         !inspectionLimitReached
       ) {
 
-        // A gap containing only recognised market
-        // closure intervals is not a corrupt gap.
-
         gaps.push({
 
           afterCandle: i - 1,
-
           beforeCandle: i,
-
           missingCandles: 0,
-
           closedIntervals: closedIntervals,
-
           classification: "MARKET CLOSURE"
 
         });
@@ -715,11 +711,8 @@
     return {
 
       gaps: gaps,
-
       warnings: warnings,
-
       expectedMissing: expectedMissing,
-
       checkedIntervals: checkedIntervals
 
     };
@@ -743,19 +736,12 @@
     const statistics = {
 
       candleCount: 0,
-
       validCandles: 0,
-
       invalidCandles: 0,
-
       duplicateTimestamps: 0,
-
       outOfOrderTimestamps: 0,
-
       expectedMissingCandles: 0,
-
       detectedGaps: 0,
-
       checkedIntervals: 0
 
     };
