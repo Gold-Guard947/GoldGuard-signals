@@ -5,20 +5,6 @@
 
  Independent historical candle validation component.
 
- Features:
- - H1, M15 and M5 timeframe validation.
- - OHLC structure validation.
- - Timestamp validation.
- - Duplicate timestamp detection.
- - Chronological ordering validation.
- - Missing candle detection.
- - Weekend market closure recognition.
- - Configurable market holiday recognition.
- - Configurable trading session times.
- - Spread validation.
- - Tick volume validation.
- - Structured PASS / WARNING / FAIL results.
-
  Historical data only.
  No live market feed.
  No trade execution.
@@ -31,14 +17,13 @@
   "use strict";
 
   const VERSION = "1.0";
-
   const MODE = "HISTORICAL DATA ONLY";
 
-  const TIMEFRAMES = {
+  const TIMEFRAMES = Object.freeze({
     H1: 60 * 60 * 1000,
     M15: 15 * 60 * 1000,
     M5: 5 * 60 * 1000
-  };
+  });
 
   const DEFAULT_CONFIG = {
     timezone: "UTC",
@@ -87,6 +72,8 @@
 
   function cloneConfig(config) {
 
+    config = isObject(config) ? config : {};
+
     const result = {
       ...DEFAULT_CONFIG,
       ...config
@@ -94,17 +81,23 @@
 
     result.weekendClosure = {
       ...DEFAULT_CONFIG.weekendClosure,
-      ...(config.weekendClosure || {})
+      ...(isObject(config.weekendClosure)
+        ? config.weekendClosure
+        : {})
     };
 
     result.spread = {
       ...DEFAULT_CONFIG.spread,
-      ...(config.spread || {})
+      ...(isObject(config.spread)
+        ? config.spread
+        : {})
     };
 
     result.tickVolume = {
       ...DEFAULT_CONFIG.tickVolume,
-      ...(config.tickVolume || {})
+      ...(isObject(config.tickVolume)
+        ? config.tickVolume
+        : {})
     };
 
     result.marketClosures = Array.isArray(
@@ -131,9 +124,7 @@
       mode: MODE,
       timeframe: timeframe,
       valid: status !== "FAIL",
-
       statistics: statistics,
-
       errors: errors,
       warnings: warnings
     };
@@ -199,9 +190,7 @@
       );
     }
 
-    if (
-      !Array.isArray(config.marketClosures)
-    ) {
+    if (!Array.isArray(config.marketClosures)) {
       errors.push(
         "Market closures must be an array."
       );
@@ -232,8 +221,11 @@
 
     const date = new Date(timestamp);
 
-    const day = date.getUTCDay();
+    if (Number.isNaN(date.getTime())) {
+      return false;
+    }
 
+    const day = date.getUTCDay();
     const hour = date.getUTCHours();
 
     // Saturday is closed.
@@ -251,7 +243,7 @@
       return true;
     }
 
-    // Friday after market closing.
+    // Friday from market closing onwards.
 
     if (
       day === 5 &&
@@ -292,6 +284,7 @@
       ) {
         return true;
       }
+
     }
 
     return false;
@@ -337,8 +330,10 @@
     ) {
 
       errors.push(
-        "Candle " + index + " has an invalid timestampMs."
+        "Candle " + index +
+        " has an invalid timestampMs."
       );
+
     }
 
 
@@ -359,6 +354,7 @@
           "Candle " + index +
           " has an invalid " + field + " value."
         );
+
       }
 
     }
@@ -384,10 +380,7 @@
 
       }
 
-      if (
-        high < open ||
-        high < close
-      ) {
+      if (high < open || high < close) {
 
         errors.push(
           "Candle " + index +
@@ -396,10 +389,7 @@
 
       }
 
-      if (
-        low > open ||
-        low > close
-      ) {
+      if (low > open || low > close) {
 
         errors.push(
           "Candle " + index +
@@ -413,8 +403,10 @@
 
     // Spread
 
-    if (candle.spread === undefined ||
-        candle.spread === null) {
+    if (
+      candle.spread === undefined ||
+      candle.spread === null
+    ) {
 
       if (config.spread.required) {
 
@@ -506,17 +498,22 @@
   function validateTimestamps(candles) {
 
     const errors = [];
-
     const seen = new Set();
 
     let outOfOrder = 0;
-
     let duplicates = 0;
 
     for (let i = 0; i < candles.length; i++) {
 
-      const timestamp = candles[i] &&
-        candles[i].timestampMs;
+      const current = candles[i];
+
+      // Protect against null and non-object candles.
+
+      if (!isObject(current)) {
+        continue;
+      }
+
+      const timestamp = current.timestampMs;
 
       if (!isFiniteNumber(timestamp)) {
         continue;
@@ -536,17 +533,27 @@
 
       }
 
-      if (
-        i > 0 &&
-        isFiniteNumber(candles[i - 1].timestampMs) &&
-        timestamp < candles[i - 1].timestampMs
-      ) {
+      if (i > 0) {
 
-        outOfOrder++;
+        const previous = candles[i - 1];
 
-        errors.push(
-          "Out-of-order timestamp detected at candle " + i + "."
-        );
+        const previousTimestamp =
+          isObject(previous)
+            ? previous.timestampMs
+            : null;
+
+        if (
+          isFiniteNumber(previousTimestamp) &&
+          timestamp < previousTimestamp
+        ) {
+
+          outOfOrder++;
+
+          errors.push(
+            "Out-of-order timestamp detected at candle " + i + "."
+          );
+
+        }
 
       }
 
@@ -572,17 +579,24 @@
   ) {
 
     const gaps = [];
-
     const warnings = [];
 
     let expectedMissing = 0;
-
     let checkedIntervals = 0;
 
     for (let i = 1; i < candles.length; i++) {
 
       const previous = candles[i - 1];
       const current = candles[i];
+
+      // Safety checks.
+
+      if (
+        !isObject(previous) ||
+        !isObject(current)
+      ) {
+        continue;
+      }
 
       if (
         !isFiniteNumber(previous.timestampMs) ||
@@ -598,29 +612,26 @@
         continue;
       }
 
-      if (
-        currentTime - previousTime <= interval
-      ) {
+      if (currentTime - previousTime <= interval) {
         continue;
       }
 
       let missing = 0;
-
       let closedIntervals = 0;
 
       let timestamp = previousTime + interval;
-
       let iterations = 0;
+
+      let inspectionLimitReached = false;
 
       while (timestamp < currentTime) {
 
         iterations++;
-
         checkedIntervals++;
 
-        if (
-          iterations > config.maxGapChecks
-        ) {
+        if (iterations > config.maxGapChecks) {
+
+          inspectionLimitReached = true;
 
           warnings.push(
             "Gap inspection limit reached between candles " +
@@ -630,6 +641,9 @@
           break;
 
         }
+
+        // Count only intervals where the market
+        // was expected to be open.
 
         if (isMarketClosed(timestamp, config)) {
 
@@ -645,6 +659,8 @@
 
       }
 
+
+      // Record only genuine missing trading intervals.
 
       if (missing > 0) {
 
@@ -670,10 +686,31 @@
           ". Missing expected candles: " + missing + "."
         );
 
+      } else if (
+        closedIntervals > 0 &&
+        !inspectionLimitReached
+      ) {
+
+        // A gap containing only recognised market
+        // closure intervals is not a corrupt gap.
+
+        gaps.push({
+
+          afterCandle: i - 1,
+
+          beforeCandle: i,
+
+          missingCandles: 0,
+
+          closedIntervals: closedIntervals,
+
+          classification: "MARKET CLOSURE"
+
+        });
+
       }
 
     }
-
 
     return {
 
@@ -701,7 +738,6 @@
   ) {
 
     const errors = [];
-
     const warnings = [];
 
     const statistics = {
@@ -779,10 +815,7 @@
     }
 
 
-    const config = cloneConfig(
-      isObject(userConfig) ? userConfig : {}
-    );
-
+    const config = cloneConfig(userConfig);
 
     const configErrors = validateConfig(config);
 
@@ -850,8 +883,8 @@
       timestampResult.outOfOrder;
 
 
-    // Inspect gaps only when timestamps are ordered
-    // and unique.
+    // Inspect gaps only when candle integrity
+    // and timestamp ordering are valid.
 
     if (
       timestampResult.errors.length === 0 &&
@@ -873,7 +906,9 @@
         gapResult.expectedMissing;
 
       statistics.detectedGaps =
-        gapResult.gaps.length;
+        gapResult.gaps.filter(function (gap) {
+          return gap.missingCandles > 0;
+        }).length;
 
       statistics.checkedIntervals =
         gapResult.checkedIntervals;
@@ -895,7 +930,6 @@
       errors,
       warnings
     );
-
 
     return createResult(
       status,
@@ -935,9 +969,7 @@
         return false;
       }
 
-      const config = cloneConfig(
-        isObject(userConfig) ? userConfig : {}
-      );
+      const config = cloneConfig(userConfig);
 
       if (validateConfig(config).length > 0) {
         return false;
@@ -953,16 +985,13 @@
   };
 
 
-  // Prevent accidental replacement of an existing
-  // component with the same name.
+  // ----------------------------------
+  // GLOBAL REGISTRATION
+  // ----------------------------------
 
-  if (
-    typeof globalThis !== "undefined"
-  ) {
+  if (typeof globalThis !== "undefined") {
 
-    if (
-      globalThis.GoldGuardHistoricalDataValidator
-    ) {
+    if (globalThis.GoldGuardHistoricalDataValidator) {
 
       throw new Error(
         "GoldGuard Historical Data Validator already exists."
@@ -974,14 +1003,9 @@
       globalThis,
       "GoldGuardHistoricalDataValidator",
       {
-        value: Object.freeze(
-          HistoricalDataValidator
-        ),
-
+        value: Object.freeze(HistoricalDataValidator),
         writable: false,
-
         configurable: false,
-
         enumerable: true
       }
     );
@@ -989,7 +1013,9 @@
   }
 
 
-  // CommonJS compatibility for independent testing.
+  // ----------------------------------
+  // COMMONJS EXPORT
+  // ----------------------------------
 
   if (
     typeof module !== "undefined" &&
@@ -1008,6 +1034,5 @@
   console.log(
     "Mode: " + MODE
   );
-
 
 })();
