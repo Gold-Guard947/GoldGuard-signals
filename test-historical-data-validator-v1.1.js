@@ -40,8 +40,8 @@
   ) {
 
     validator = require(
-      "./historical-data-validator.js"
-    );
+  "./historical-data-validator-v1.1.js"
+);
 
   } else if (
     typeof globalThis !== "undefined"
