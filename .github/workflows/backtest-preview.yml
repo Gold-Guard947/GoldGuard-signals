@@ -27,47 +27,26 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Check JavaScript syntax
+      - name: Check required files
         run: |
-          node --check data-adapter.js
-          node --check signal-engine.js
-          node --check historical-integration.js
-          node --check backtest-engine.js
-          node --check execution-cost.js
-          node --check test-engine.js
-          node --check test-historical-integration.js
-          node --check test-backtest-engine.js
-          node --check test-backtest-node.js
-          node --check test-backtest-engine-v1.2.js
-          node --check test-backtest-advanced.js
-          node --check test-end-to-end.js
-          node --check test-full-backtest-integration.js
-          node --check test-execution-cost.js
+          set -e
           node --check generate-test-report.js
+          node --check historical-data-validator-v2.0.js
+          node --check test-historical-data-validator-v2.0.js
 
-      - name: Confirm required files exist
-        run: |
           test -f data-adapter.js
-          test -f signal-engine.js
           test -f historical-integration.js
-          test -f test-historical-integration.js
           test -f backtest-engine.js
-          test -f test-backtest-node.js
-          test -f test-backtest-engine-v1.2.js
-          test -f test-backtest-advanced.js
-          test -f test-end-to-end.js
-          test -f test-full-backtest-integration.js
           test -f execution-cost.js
-          test -f test-execution-cost.js
-          test -f generate-test-report.js
-          echo "All required files found."
+          test -f historical-data-validator-v2.0.js
+          test -f test-historical-data-validator-v2.0.js
 
-      - name: Run tests and generate report
+      - name: Run all GoldGuard test suites
+        id: tests
         run: |
           set +e
 
-          TEST_FAILURE=0
-          PUBLISH_FAILURE=0
+          FAILED=0
 
           run_test() {
             NAME="$1"
@@ -75,113 +54,61 @@ jobs:
             shift 2
 
             echo ""
+            echo "=================================="
             echo "Running: $NAME"
+            echo "=================================="
 
-            "$@" > "$LOG" 2>&1
-            RESULT=$?
-
-            cat "$LOG"
+            "$@" 2>&1 | tee "$LOG"
+            RESULT=${PIPESTATUS[0]}
 
             if [ "$RESULT" -ne 0 ]; then
-              echo "FAILED PROCESS: $NAME"
-              TEST_FAILURE=1
+              FAILED=1
+              echo "FAILED: $NAME"
             else
-              echo "COMPLETED: $NAME"
+              echo "PASSED: $NAME"
             fi
           }
 
-          run_test \
-            "Historical Integration" \
-            "historical-integration-test.log" \
-            node -e '
-              global.window = global;
-              global.document = {
-                body: {
-                  insertAdjacentHTML: function () {}
-                }
-              };
-              require("./data-adapter.js");
-              require("./signal-engine.js");
-              require("./historical-integration.js");
-              require("./test-historical-integration.js");
-            '
+          run_test "Historical Integration" "historical-integration-test.log" node test-historical-integration.js
+          run_test "Backtest Regression V1.3" "backtest-regression-test.log" node test-backtest-node.js
+          run_test "Backtest Engine V1.2" "backtest-v1.2-test.log" node test-backtest-engine.js
+          run_test "Advanced Backtest V1.2" "backtest-advanced-test.log" node test-advanced-backtest.js
+          run_test "End-to-End" "end-to-end-test.log" node test-end-to-end.js
+          run_test "Full Backtest Integration" "full-backtest-integration-test.log" node test-full-backtest-integration.js
+          run_test "Execution Cost V1.3" "execution-cost-test.log" node test-execution-cost.js
+          run_test "Historical Data Validator V2.0" "historical-validator-v2.0-test.log" node test-historical-data-validator-v2.0.js
 
-          run_test \
-            "Backtest Regression V1.3" \
-            "backtest-regression-test.log" \
-            node test-backtest-node.js
+          echo "FAILED=$FAILED" >> "$GITHUB_OUTPUT"
 
-          run_test \
-            "Backtest Engine V1.2" \
-            "backtest-v1.2-test.log" \
-            node test-backtest-engine-v1.2.js
+      - name: Generate GoldGuard test report
+        run: node generate-test-report.js
 
-          run_test \
-            "Advanced Backtest V1.2" \
-            "backtest-advanced-test.log" \
-            node test-backtest-advanced.js
-
-          run_test \
-            "End-to-End Tests" \
-            "end-to-end-test.log" \
-            node test-end-to-end.js
-
-          run_test \
-            "Full Backtest Integration" \
-            "full-backtest-integration-test.log" \
-            node test-full-backtest-integration.js
-
-          run_test \
-            "Execution Cost Tests" \
-            "execution-cost-test.log" \
-            node test-execution-cost.js
-
-          echo ""
-          echo "Generating GoldGuard test report..."
-
-          node generate-test-report.js
-          REPORT_STATUS=$?
-
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-
-            echo ""
-            echo "Publishing dashboard test report..."
-
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-            git add test-results.json
-
-            if ! git diff --cached --quiet; then
-
-              git commit -m "Update GoldGuard automated test report"
-
-              COMMIT_STATUS=$?
-
-              if [ "$COMMIT_STATUS" -eq 0 ]; then
-                git push
-                PUSH_STATUS=$?
-
-                if [ "$PUSH_STATUS" -ne 0 ]; then
-                  PUBLISH_FAILURE=1
-                fi
-              else
-                PUBLISH_FAILURE=1
-              fi
-
-            else
-              echo "Test report has not changed."
-            fi
-
-          else
-            echo "Report generated on development branch; not publishing to Pages."
-          fi
-
-          echo ""
-          echo "GoldGuard reporting process completed."
-
-          if [ "$TEST_FAILURE" -ne 0 ] || \
-             [ "$REPORT_STATUS" -ne 0 ] || \
-             [ "$PUBLISH_FAILURE" -ne 0 ]; then
+      - name: Publish test report
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          if [ ! -f test-results.json ]; then
+            echo "Test report was not generated."
             exit 1
           fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add test-results.json
+
+          if git diff --cached --quiet; then
+            echo "No test report changes to publish."
+          else
+            git commit -m "Update GoldGuard automated test report"
+            git push
+          fi
+
+      - name: Final test status
+        if: always()
+        run: |
+          if [ "${{ steps.tests.outputs.FAILED }}" = "1" ]; then
+            echo "One or more GoldGuard test suites failed."
+            exit 1
+          fi
+
+          echo "All GoldGuard test suites passed."
