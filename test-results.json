@@ -1,19 +1,19 @@
 {
   "project": "GoldGuard",
   "reportVersion": "1.1",
-  "generatedAt": "2026-11-26T14:03:38.578Z",
-  "commit": "125c102ead1779ae105ab9c1051a1f636163f812",
-  "workflowRunId": "45835185434",
-  "workflowRunNumber": "58",
+  "generatedAt": "2026-11-26T14:50:23.053Z",
+  "commit": "53425781f4f2309d03b36821b7095a51fd624038",
+  "workflowRunId": "45843003246",
+  "workflowRunNumber": "59",
   "mode": "HISTORICAL TESTING ONLY",
   "status": "INCOMPLETE",
   "summary": {
-    "passed": 107,
+    "passed": 119,
     "failed": 0,
-    "total": 107,
-    "suitesPassed": 6,
+    "total": 119,
+    "suitesPassed": 7,
     "suitesFailed": 0,
-    "suitesIncomplete": 2
+    "suitesIncomplete": 1
   },
   "suites": [
     {
@@ -40,11 +40,11 @@
       "id": "backtest-v1.2",
       "name": "Backtest Engine V1.2",
       "log": "backtest-v1.2-test.log",
-      "status": "ERROR",
-      "passed": null,
-      "failed": null,
-      "total": null,
-      "error": "Could not find PASSED and FAILED summary values."
+      "status": "PASSED",
+      "passed": 12,
+      "failed": 0,
+      "total": 12,
+      "error": null
     },
     {
       "id": "backtest-advanced",
