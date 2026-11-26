@@ -4,6 +4,7 @@ name: GoldGuard Backtest Tests
 on:
   push:
     branches:
+      - main
       - backtest-v1.1
 
   workflow_dispatch:
@@ -13,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout development branch
+      - name: Checkout repository
         uses: actions/checkout@v7
 
       - name: Set up Node.js
@@ -41,8 +42,11 @@ jobs:
 
       - name: Confirm backtest files exist
         run: |
+          test -f data-adapter.js
+          test -f signal-engine.js
+          test -f historical-integration.js
+          test -f test-historical-integration.js
           test -f backtest-engine.js
-          test -f test-backtest-engine.js
           test -f test-backtest-node.js
           test -f test-backtest-engine-v1.2.js
           test -f test-backtest-advanced.js
@@ -50,7 +54,25 @@ jobs:
           test -f test-full-backtest-integration.js
           test -f execution-cost.js
           test -f test-execution-cost.js
-          echo "Backtest files found successfully."
+          echo "All required files found."
+
+      - name: Run Historical Integration Tests
+        run: |
+          set -o pipefail
+          node -e '
+            global.window = global;
+            global.document = {
+              body: {
+                insertAdjacentHTML: function () {}
+              }
+            };
+            require("./data-adapter.js");
+            require("./signal-engine.js");
+            require("./historical-integration.js");
+            require("./test-historical-integration.js");
+          ' | tee historical-integration-test.log
+
+          grep -q "FAILURES: 0" historical-integration-test.log
 
       - name: Run Node.js backtest tests
         run: |
