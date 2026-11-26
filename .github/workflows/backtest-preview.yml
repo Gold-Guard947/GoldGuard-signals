@@ -1,3 +1,4 @@
+
 name: GoldGuard Backtest Tests
 
 on:
@@ -30,9 +31,11 @@ jobs:
       - name: Check required files
         run: |
           set -e
+
           node --check generate-test-report.js
           node --check historical-data-validator-v2.0.js
           node --check test-historical-data-validator-v2.0.js
+          node --check test-backtest-advanced.js
 
           test -f data-adapter.js
           test -f historical-integration.js
@@ -40,6 +43,7 @@ jobs:
           test -f execution-cost.js
           test -f historical-data-validator-v2.0.js
           test -f test-historical-data-validator-v2.0.js
+          test -f test-backtest-advanced.js
 
       - name: Run all GoldGuard test suites
         id: tests
@@ -72,7 +76,7 @@ jobs:
           run_test "Historical Integration" "historical-integration-test.log" node test-historical-integration.js
           run_test "Backtest Regression V1.3" "backtest-regression-test.log" node test-backtest-node.js
           run_test "Backtest Engine V1.2" "backtest-v1.2-test.log" node test-backtest-engine.js
-          run_test "Advanced Backtest V1.2" "backtest-advanced-test.log" node test-advanced-backtest.js
+          run_test "Advanced Backtest V1.2" "backtest-advanced-test.log" node test-backtest-advanced.js
           run_test "End-to-End" "end-to-end-test.log" node test-end-to-end.js
           run_test "Full Backtest Integration" "full-backtest-integration-test.log" node test-full-backtest-integration.js
           run_test "Execution Cost V1.3" "execution-cost-test.log" node test-execution-cost.js
