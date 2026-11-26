@@ -1,30 +1,30 @@
 {
   "project": "GoldGuard",
   "reportVersion": "1.1",
-  "generatedAt": "2026-11-26T13:47:02.185Z",
-  "commit": "8a4e4ae3cc6f1aa983b40ca71f84186d50be5a57",
-  "workflowRunId": "45832469720",
-  "workflowRunNumber": "57",
+  "generatedAt": "2026-11-26T14:03:38.578Z",
+  "commit": "125c102ead1779ae105ab9c1051a1f636163f812",
+  "workflowRunId": "45835185434",
+  "workflowRunNumber": "58",
   "mode": "HISTORICAL TESTING ONLY",
   "status": "INCOMPLETE",
   "summary": {
-    "passed": 90,
+    "passed": 107,
     "failed": 0,
-    "total": 90,
-    "suitesPassed": 5,
+    "total": 107,
+    "suitesPassed": 6,
     "suitesFailed": 0,
-    "suitesIncomplete": 3
+    "suitesIncomplete": 2
   },
   "suites": [
     {
       "id": "historical-integration",
       "name": "Historical Integration V1.2",
       "log": "historical-integration-test.log",
-      "status": "ERROR",
-      "passed": null,
-      "failed": null,
-      "total": null,
-      "error": "Could not find the Historical Integration test summary."
+      "status": "PASSED",
+      "passed": 17,
+      "failed": 0,
+      "total": 17,
+      "error": null
     },
     {
       "id": "backtest-regression",
