@@ -1,15 +1,17 @@
 
-
 /*
 
  GOLDGUARD HISTORICAL INTEGRATION TEST V1.2
 
  Tests historical validation, component safeguards,
-
  and signal engine hand-off.
 
- No live data.
+ V1.2 TEST CORRECTION:
+ - Expects Data Adapter V1.1 timestamp errors.
+ - Expects Data Adapter V1.1 chronological-order errors.
+ - Preserves adapter validation error behaviour.
 
+ No live data.
  No trade execution.
 
 */
@@ -340,7 +342,7 @@
 
         return result.status === "WAIT" &&
 
-          result.reason === "H1 contains an invalid timestamp";
+          result.reason === "Invalid timestamp at index 0";
 
       }
 
@@ -364,7 +366,7 @@
 
           result.reason ===
 
-            "M15 candles are not in chronological order";
+            "Duplicate or non-chronological timestamp";
 
       }
 
