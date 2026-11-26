@@ -340,32 +340,31 @@
       return result;
     }
 
-function calculateCommission(action) {
+    function calculateCommission(action) {
 
-  const result = costCalculator.calculateCommission(
-    lots,
-    costSettings,
-    action
-  );
+      const result = costCalculator.calculateCommission(
+        lots,
+        costSettings,
+        action
+      );
 
-  if (
-    !result ||
-    result.valid !== true ||
-    !Number.isFinite(result.commission) ||
-    result.commission < 0
-  ) {
-    throw new Error("Invalid calculated commission");
-  }
+      if (
+        !result ||
+        result.valid !== true ||
+        !Number.isFinite(result.commission) ||
+        result.commission < 0
+      ) {
+        throw new Error("Invalid calculated commission");
+      }
 
-  if (
-    result.currency !== costConfig.commissionCurrency
-  ) {
-    throw new Error("Commission currency mismatch");
-  }
+      if (
+        result.currency !== costConfig.commissionCurrency
+      ) {
+        throw new Error("Commission currency mismatch");
+      }
 
-  return result.commission;
-}
-
+      return result.commission;
+    }
 
     const trades = [];
 
@@ -542,7 +541,12 @@ function calculateCommission(action) {
 
         if (askOpen >= trade.stopLoss) {
 
-          exitReference = askOpen;
+          // Pass the original Bid open.
+          // The execution calculator adds the historical
+          // spread once to reconstruct the executable Ask.
+          // Passing askOpen here would apply spread twice.
+
+          exitReference = bidOpen;
           exitReason = "STOP_LOSS_GAP";
 
         } else if (askOpen <= trade.takeProfit) {
