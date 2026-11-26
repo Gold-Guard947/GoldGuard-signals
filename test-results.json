@@ -1,19 +1,19 @@
 {
   "project": "GoldGuard",
-  "reportVersion": "1.0",
-  "generatedAt": "2026-11-26T13:35:54.276Z",
-  "commit": "26575004045726f0579c8e3c5690a879e5a30c13",
-  "workflowRunId": "45830654271",
-  "workflowRunNumber": "55",
+  "reportVersion": "1.1",
+  "generatedAt": "2026-11-26T13:43:25.257Z",
+  "commit": "839fbb025a884f829965eae3437f2c005d847253",
+  "workflowRunId": "45831897406",
+  "workflowRunNumber": "56",
   "mode": "HISTORICAL TESTING ONLY",
-  "status": "PASSED",
+  "status": "INCOMPLETE",
   "summary": {
     "passed": 111,
     "failed": 0,
     "total": 111,
     "suitesPassed": 7,
     "suitesFailed": 0,
-    "suitesIncomplete": 0
+    "suitesIncomplete": 1
   },
   "suites": [
     {
@@ -85,6 +85,16 @@
       "failed": 0,
       "total": 20,
       "error": null
+    },
+    {
+      "id": "historical-validator-v2.0",
+      "name": "Historical Data Validator V2.0",
+      "log": "historical-validator-v2.0-test.log",
+      "status": "MISSING",
+      "passed": null,
+      "failed": null,
+      "total": null,
+      "error": "Test log file was not found."
     }
   ]
 }
