@@ -1,30 +1,30 @@
 {
   "project": "GoldGuard",
   "reportVersion": "1.1",
-  "generatedAt": "2026-11-26T13:43:25.257Z",
-  "commit": "839fbb025a884f829965eae3437f2c005d847253",
-  "workflowRunId": "45831897406",
-  "workflowRunNumber": "56",
+  "generatedAt": "2026-11-26T13:47:02.185Z",
+  "commit": "8a4e4ae3cc6f1aa983b40ca71f84186d50be5a57",
+  "workflowRunId": "45832469720",
+  "workflowRunNumber": "57",
   "mode": "HISTORICAL TESTING ONLY",
   "status": "INCOMPLETE",
   "summary": {
-    "passed": 111,
+    "passed": 90,
     "failed": 0,
-    "total": 111,
-    "suitesPassed": 7,
+    "total": 90,
+    "suitesPassed": 5,
     "suitesFailed": 0,
-    "suitesIncomplete": 1
+    "suitesIncomplete": 3
   },
   "suites": [
     {
       "id": "historical-integration",
       "name": "Historical Integration V1.2",
       "log": "historical-integration-test.log",
-      "status": "PASSED",
-      "passed": 17,
-      "failed": 0,
-      "total": 17,
-      "error": null
+      "status": "ERROR",
+      "passed": null,
+      "failed": null,
+      "total": null,
+      "error": "Could not find the Historical Integration test summary."
     },
     {
       "id": "backtest-regression",
@@ -40,21 +40,21 @@
       "id": "backtest-v1.2",
       "name": "Backtest Engine V1.2",
       "log": "backtest-v1.2-test.log",
-      "status": "PASSED",
-      "passed": 19,
-      "failed": 0,
-      "total": 19,
-      "error": null
+      "status": "ERROR",
+      "passed": null,
+      "failed": null,
+      "total": null,
+      "error": "Could not find PASSED and FAILED summary values."
     },
     {
       "id": "backtest-advanced",
       "name": "Advanced Backtest V1.2",
       "log": "backtest-advanced-test.log",
-      "status": "PASSED",
-      "passed": 19,
-      "failed": 0,
-      "total": 19,
-      "error": null
+      "status": "ERROR",
+      "passed": null,
+      "failed": null,
+      "total": null,
+      "error": "Could not find PASSED and FAILED summary values."
     },
     {
       "id": "end-to-end",
@@ -90,11 +90,11 @@
       "id": "historical-validator-v2.0",
       "name": "Historical Data Validator V2.0",
       "log": "historical-validator-v2.0-test.log",
-      "status": "MISSING",
-      "passed": null,
-      "failed": null,
-      "total": null,
-      "error": "Test log file was not found."
+      "status": "PASSED",
+      "passed": 34,
+      "failed": 0,
+      "total": 34,
+      "error": null
     }
   ]
 }
