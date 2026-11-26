@@ -1,0 +1,90 @@
+{
+  "project": "GoldGuard",
+  "reportVersion": "1.0",
+  "generatedAt": "2026-11-26T12:19:39.975Z",
+  "commit": "44140d7d82bd021868f4cd1eea25bd1eedc1c721",
+  "workflowRunId": "45818570006",
+  "workflowRunNumber": "51",
+  "mode": "HISTORICAL TESTING ONLY",
+  "status": "PASSED",
+  "summary": {
+    "passed": 111,
+    "failed": 0,
+    "total": 111,
+    "suitesPassed": 7,
+    "suitesFailed": 0,
+    "suitesIncomplete": 0
+  },
+  "suites": [
+    {
+      "id": "historical-integration",
+      "name": "Historical Integration V1.2",
+      "log": "historical-integration-test.log",
+      "status": "PASSED",
+      "passed": 17,
+      "failed": 0,
+      "total": 17,
+      "error": null
+    },
+    {
+      "id": "backtest-regression",
+      "name": "Backtest Regression V1.3",
+      "log": "backtest-regression-test.log",
+      "status": "PASSED",
+      "passed": 14,
+      "failed": 0,
+      "total": 14,
+      "error": null
+    },
+    {
+      "id": "backtest-v1.2",
+      "name": "Backtest Engine V1.2",
+      "log": "backtest-v1.2-test.log",
+      "status": "PASSED",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "error": null
+    },
+    {
+      "id": "backtest-advanced",
+      "name": "Advanced Backtest V1.2",
+      "log": "backtest-advanced-test.log",
+      "status": "PASSED",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "error": null
+    },
+    {
+      "id": "end-to-end",
+      "name": "End-to-End Tests",
+      "log": "end-to-end-test.log",
+      "status": "PASSED",
+      "passed": 9,
+      "failed": 0,
+      "total": 9,
+      "error": null
+    },
+    {
+      "id": "full-backtest-integration",
+      "name": "Full Backtest Integration",
+      "log": "full-backtest-integration-test.log",
+      "status": "PASSED",
+      "passed": 13,
+      "failed": 0,
+      "total": 13,
+      "error": null
+    },
+    {
+      "id": "execution-cost",
+      "name": "Execution Cost V1.3",
+      "log": "execution-cost-test.log",
+      "status": "PASSED",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "error": null
+    }
+  ]
+}
