@@ -1,8 +1,15 @@
+
 /*
- GOLDGUARD TEST REPORT GENERATOR V1.0
+ GOLDGUARD TEST REPORT GENERATOR V1.1
 
  Reads actual GitHub Actions test logs.
  Generates test-results.json for the dashboard.
+
+ V1.1:
+ - Adds Historical Data Validator V2.0.
+ - Supports its TOTAL TESTS summary format.
+ - Preserves all seven existing test suites.
+ - Validates every suite before reporting overall success.
 
  Historical and backtest reporting only.
  No live market feed.
@@ -15,7 +22,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const VERSION = "1.0";
+const VERSION = "1.1";
 const OUTPUT_FILE = "test-results.json";
 
 const SUITES = [
@@ -54,6 +61,12 @@ const SUITES = [
     id: "execution-cost",
     name: "Execution Cost V1.3",
     log: "execution-cost-test.log"
+  },
+  {
+    id: "historical-validator-v2.0",
+    name: "Historical Data Validator V2.0",
+    log: "historical-validator-v2.0-test.log",
+    type: "historical-validator"
   }
 ];
 
@@ -93,25 +106,6 @@ function extractNumber(pattern, content) {
   return Number(matches[matches.length - 1][1]);
 }
 
-function parseHistoricalLog(suite, content) {
-  const match = content.match(
-    /Historical integration tests V1\.2:\s*(\d+)\s*\/\s*(\d+)\s*passed\.\s*FAILURES:\s*(\d+)/i
-  );
-
-  if (!match) {
-    return errorResult(
-      suite,
-      "Could not find the Historical Integration test summary."
-    );
-  }
-
-  const passed = Number(match[1]);
-  const total = Number(match[2]);
-  const failed = Number(match[3]);
-
-  return buildResult(suite, passed, failed, total);
-}
-
 function buildResult(suite, passed, failed, total) {
   if (
     !Number.isInteger(passed) ||
@@ -121,7 +115,10 @@ function buildResult(suite, passed, failed, total) {
     failed < 0 ||
     total < 0
   ) {
-    return errorResult(suite, "Invalid test summary numbers.");
+    return errorResult(
+      suite,
+      "Invalid test summary numbers."
+    );
   }
 
   if (passed + failed !== total) {
@@ -141,6 +138,60 @@ function buildResult(suite, passed, failed, total) {
     total,
     error: null
   };
+}
+
+function parseHistoricalLog(suite, content) {
+  const match = content.match(
+    /Historical integration tests V1\.2:\s*(\d+)\s*\/\s*(\d+)\s*passed\.\s*FAILURES:\s*(\d+)/i
+  );
+
+  if (!match) {
+    return errorResult(
+      suite,
+      "Could not find the Historical Integration test summary."
+    );
+  }
+
+  const passed = Number(match[1]);
+  const total = Number(match[2]);
+  const failed = Number(match[3]);
+
+  return buildResult(suite, passed, failed, total);
+}
+
+function parseHistoricalValidatorLog(suite, content) {
+  const passed = extractNumber(
+    /^\s*PASSED:\s*(\d+)\s*$/gim,
+    content
+  );
+
+  const failed = extractNumber(
+    /^\s*FAILED:\s*(\d+)\s*$/gim,
+    content
+  );
+
+  const total = extractNumber(
+    /^\s*TOTAL TESTS:\s*(\d+)\s*$/gim,
+    content
+  );
+
+  if (
+    passed === null ||
+    failed === null ||
+    total === null
+  ) {
+    return errorResult(
+      suite,
+      "Could not find TOTAL TESTS, PASSED and FAILED values."
+    );
+  }
+
+  return buildResult(
+    suite,
+    passed,
+    failed,
+    total
+  );
 }
 
 function parseStandardLog(suite, content) {
@@ -171,7 +222,12 @@ function parseStandardLog(suite, content) {
       ? passed + failed
       : reportedTotal;
 
-  return buildResult(suite, passed, failed, total);
+  return buildResult(
+    suite,
+    passed,
+    failed,
+    total
+  );
 }
 
 function readSuite(suite) {
@@ -188,7 +244,15 @@ function readSuite(suite) {
       return parseHistoricalLog(suite, content);
     }
 
+    if (suite.type === "historical-validator") {
+      return parseHistoricalValidatorLog(
+        suite,
+        content
+      );
+    }
+
     return parseStandardLog(suite, content);
+
   } catch (error) {
     return errorResult(suite, error.message);
   }
@@ -244,12 +308,15 @@ function generateReport() {
       passed,
       failed,
       total,
+
       suitesPassed: results.filter(
         result => result.status === "PASSED"
       ).length,
+
       suitesFailed: results.filter(
         result => result.status === "FAILED"
       ).length,
+
       suitesIncomplete: results.filter(
         result =>
           result.status === "MISSING" ||
@@ -260,7 +327,10 @@ function generateReport() {
     suites: results
   };
 
-  const outputPath = path.join(__dirname, OUTPUT_FILE);
+  const outputPath = path.join(
+    __dirname,
+    OUTPUT_FILE
+  );
 
   fs.writeFileSync(
     outputPath,
@@ -277,6 +347,7 @@ function generateReport() {
   console.log("Passed:", passed);
   console.log("Failed:", failed);
   console.log("Total:", total);
+  console.log("Suites:", results.length);
 
   console.log("\nSuite results:");
 
