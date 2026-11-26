@@ -1,0 +1,44 @@
+
+name: GoldGuard Historical Validator Tests
+
+on:
+  push:
+    branches:
+      - backtest-v1.1
+
+  workflow_dispatch:
+
+jobs:
+  historical-validator-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout development branch
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Check validator JavaScript syntax
+        run: |
+          node --check historical-data-validator.js
+          node --check test-historical-data-validator.js
+          node --check test-historical-data-validator-v1.1.js
+
+      - name: Confirm validator files exist
+        run: |
+          test -f historical-data-validator.js
+          test -f test-historical-data-validator.js
+          test -f test-historical-data-validator-v1.1.js
+          echo "All historical validator files found."
+
+      - name: Run V1.0 validator tests
+        run: |
+          node test-historical-data-validator.js
+
+      - name: Run V1.1 extended reliability tests
+        run: |
+          node test-historical-data-validator-v1.1.js

@@ -1,0 +1,62 @@
+
+name: GoldGuard Backtest Tests
+
+on:
+  push:
+    branches:
+      - backtest-v1.1
+
+  workflow_dispatch:
+
+jobs:
+  backtest-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout development branch
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check data-adapter.js
+          node --check signal-engine.js
+          node --check historical-integration.js
+          node --check backtest-engine.js
+          node --check execution-cost.js
+          node --check test-engine.js
+          node --check test-historical-integration.js
+          node --check test-backtest-engine.js
+          node --check test-backtest-node.js
+          node --check test-backtest-engine-v1.2.js
+          node --check test-backtest-advanced.js
+          node --check test-end-to-end.js
+          node --check test-full-backtest-integration.js
+          node --check test-execution-cost.js
+
+      - name: Confirm backtest files exist
+        run: |
+          test -f backtest-engine.js
+          test -f test-backtest-engine.js
+          test -f test-backtest-node.js
+          test -f test-backtest-engine-v1.2.js
+          test -f test-backtest-advanced.js
+          test -f test-end-to-end.js
+          test -f test-full-backtest-integration.js
+          test -f execution-cost.js
+          test -f test-execution-cost.js
+          echo "Backtest files found successfully."
+
+      - name: Run Node.js backtest tests
+        run: |
+          node test-backtest-node.js
+          node test-backtest-engine-v1.2.js
+          node test-backtest-advanced.js
+          node test-end-to-end.js
+          node test-full-backtest-integration.js
+          node test-execution-cost.js

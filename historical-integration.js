@@ -1,10 +1,16 @@
+
+
 /*
 
- GOLDGUARD HISTORICAL INTEGRATION V1.1
+ GOLDGUARD HISTORICAL INTEGRATION V1.2
 
  Connects validated historical candles to the signal engine.
 
- Checks minimum candle counts, timestamps and chronological order.
+ Adds component-function checks.
+
+ Preserves adapter validation errors.
+
+ Validates signal engine statuses.
 
  Historical data only.
 
@@ -120,13 +126,19 @@
 
     const engine = window.GoldGuardEngine;
 
-    if (!adapter || !engine) {
+    if (!adapter || typeof adapter.convertCandles !== "function") {
 
-      return wait("GoldGuard components missing");
+      return wait("Historical data adapter unavailable");
 
     }
 
-    if (!data || typeof data !== "object") {
+    if (!engine || typeof engine.analyze !== "function") {
+
+      return wait("Signal engine unavailable");
+
+    }
+
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
 
       return wait("Historical data missing");
 
@@ -152,15 +164,55 @@
 
     }
 
-    const h1 = adapter.convertCandles(data.h1);
+    let h1;
 
-    const m15 = adapter.convertCandles(data.m15);
+    let m15;
 
-    const m5 = adapter.convertCandles(data.m5);
+    let m5;
 
-    if (!h1.valid || !m15.valid || !m5.valid) {
+    try {
 
-      return wait("Historical candle validation failed");
+      h1 = adapter.convertCandles(data.h1);
+
+      m15 = adapter.convertCandles(data.m15);
+
+      m5 = adapter.convertCandles(data.m5);
+
+    } catch (error) {
+
+      return wait("Historical adapter processing failed");
+
+    }
+
+    const conversions = [
+
+      { result: h1, name: "H1" },
+
+      { result: m15, name: "M15" },
+
+      { result: m5, name: "M5" }
+
+    ];
+
+    for (const item of conversions) {
+
+      if (!item.result || item.result.valid !== true) {
+
+        const reason =
+
+          item.result &&
+
+          typeof item.result.reason === "string" &&
+
+          item.result.reason.length > 0
+
+            ? item.result.reason
+
+            : item.name + " candle validation failed";
+
+        return wait(reason);
+
+      }
 
     }
 
@@ -174,7 +226,11 @@
 
     ];
 
-    const failedCheck = checks.find(reason => reason !== null);
+    const failedCheck = checks.find(
+
+      reason => reason !== null
+
+    );
 
     if (failedCheck) {
 
@@ -182,37 +238,53 @@
 
     }
 
-    const result = engine.analyze({
+    let result;
 
-      h1: h1.candles,
+    try {
 
-      m15: m15.candles,
+      result = engine.analyze({
 
-      m5: m5.candles,
+        h1: h1.candles,
 
-      newsBlocked: data.newsBlocked
+        m15: m15.candles,
 
-    });
+        m5: m5.candles,
 
-    if (!result || typeof result.status !== "string") {
+        newsBlocked: data.newsBlocked
 
-      return wait("Signal engine returned an invalid result");
+      });
+
+    } catch (error) {
+
+      return wait("Signal engine processing failed");
 
     }
 
-   return {
+    if (
 
-  status: result.status,
+      !result ||
 
-  reason: result.reason,
+      !["WAIT", "BUY", "SELL"].includes(result.status)
 
-  result: result,
+    ) {
 
-  mode: "HISTORICAL DATA ONLY",
+      return wait("Signal engine returned an invalid status");
 
-  symbol: data.symbol || "XAUUSD"
+    }
 
-};
+    return {
+
+      status: result.status,
+
+      reason: result.reason,
+
+      result: result,
+
+      mode: "HISTORICAL DATA ONLY",
+
+      symbol: data.symbol || "XAUUSD"
+
+    };
 
   }
 
@@ -220,12 +292,16 @@
 
     analyze: analyzeHistoricalData,
 
-    version: "1.1",
+    version: "1.2",
 
     mode: "HISTORICAL ONLY"
 
   };
 
-  console.log("GoldGuard Historical Integration V1.1 loaded.");
+  console.log(
+
+    "GoldGuard Historical Integration V1.2 loaded."
+
+  );
 
 })();

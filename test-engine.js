@@ -1,8 +1,14 @@
+
+
 /*
 
- GOLDGUARD ENGINE TEST V1.0
+ GOLDGUARD ENGINE TEST V1.1
 
- Tests the separate signal engine.
+ Tests the signal engine and strict data adapter.
+
+ Historical/demo research only.
+
+ No trading. No execution.
 
 */
 
@@ -26,17 +32,151 @@
 
   const engine = window.GoldGuardEngine;
 
+  const adapter = window.GoldGuardDataAdapter;
+
+  // SIGNAL ENGINE TESTS
+
   test(
 
     "Engine exists",
 
-    !!engine && typeof engine.analyze === "function"
+    !!engine &&
+
+    typeof engine.analyze === "function"
 
   );
-  
-// GOLDGUARD DATA ADAPTER TESTS V1.0
 
-  const adapter = window.GoldGuardDataAdapter;
+  if (engine && typeof engine.analyze === "function") {
+
+    test(
+
+      "Signal engine version 1.0",
+
+      engine.version === "1.0"
+
+    );
+
+    test(
+
+      "Missing data returns WAIT",
+
+      engine.analyze({}).status === "WAIT"
+
+    );
+
+    const makeCandles = count =>
+
+      Array.from({ length: count }, () => ({
+
+        open: 100,
+
+        high: 102,
+
+        low: 98,
+
+        close: 101
+
+      }));
+
+    const validMarketData = {
+
+      h1: makeCandles(50),
+
+      m15: makeCandles(12),
+
+      m5: makeCandles(3),
+
+      newsBlocked: false
+
+    };
+
+    test(
+
+      "Insufficient data returns WAIT",
+
+      engine.analyze({
+
+        h1: [],
+
+        m15: [],
+
+        m5: [],
+
+        newsBlocked: false
+
+      }).status === "WAIT"
+
+    );
+
+    test(
+
+      "Unverified news returns WAIT",
+
+      engine.analyze({
+
+        ...validMarketData,
+
+        newsBlocked: undefined
+
+      }).status === "WAIT"
+
+    );
+
+    test(
+
+      "Major news protection returns WAIT",
+
+      engine.analyze({
+
+        ...validMarketData,
+
+        newsBlocked: true
+
+      }).status === "WAIT"
+
+    );
+
+    test(
+
+      "Invalid OHLC returns WAIT",
+
+      engine.analyze({
+
+        ...validMarketData,
+
+        h1: [
+
+          ...validMarketData.h1.slice(0, 49),
+
+          {
+
+            open: 100,
+
+            high: 99,
+
+            low: 98,
+
+            close: 101
+
+          }
+
+        ]
+
+      }).status === "WAIT"
+
+    );
+
+    test(
+
+      "Neutral H1 direction returns WAIT",
+
+      engine.analyze(validMarketData).status === "WAIT"
+
+    );
+
+  }
+
+  // DATA ADAPTER V1.1 TESTS
 
   test(
 
@@ -48,11 +188,27 @@
 
   );
 
-  const adapterResult = adapter && typeof adapter.convertCandles === "function"
+  if (
 
-    ? adapter.convertCandles([{
+    adapter &&
 
-        Timestamp: "2026.10.30 20:55:00",
+    typeof adapter.convertCandles === "function"
+
+  ) {
+
+    test(
+
+      "Data adapter version 1.1",
+
+      adapter.version === "1.1"
+
+    );
+
+    function candle(timestamp, overrides) {
+
+      return Object.assign({
+
+        Timestamp: timestamp,
 
         Open: 100,
 
@@ -66,188 +222,261 @@
 
         Spread: 240
 
-      }])
+      }, overrides || {});
 
-    : null;
+    }
 
-  test(
+    function convert(data) {
 
-    "Adapter converts uppercase OHLC",
+      return adapter.convertCandles(data);
 
-    !!adapterResult &&
+    }
 
-    adapterResult.valid === true &&
+    const valid = convert([
 
-    adapterResult.candles[0].open === 100 &&
+      candle("2026.10.30 20:55:00")
 
-    adapterResult.candles[0].close === 101
+    ]);
 
-  );
+    test(
 
-  const invalidResult = adapter && typeof adapter.convertCandles === "function"
+      "Uppercase OHLC converts correctly",
 
-    ? adapter.convertCandles([{
+      valid.valid === true &&
 
-        Timestamp: "2026.10.30 20:55:00",
+      valid.candles[0].open === 100 &&
 
-        Open: 100,
+      valid.candles[0].close === 101
 
-        High: 99,
+    );
 
-        Low: 98,
+    test(
 
-        Close: 101
+      "Timestamp milliseconds generated",
 
-      }])
+      valid.valid === true &&
 
-    : null;
+      Number.isFinite(valid.candles[0].timestampMs)
 
-  test(
+    );
 
-    "Adapter rejects invalid OHLC",
+    test(
 
-    !!invalidResult &&
+      "Empty dataset rejected",
 
-    invalidResult.valid === false
+      convert([]).valid === false
 
-  );
+    );
 
- if (engine && typeof engine.analyze === "function") {
- 
-  test(
+    test(
 
-    "Correct version",
+      "Missing dataset rejected",
 
-    engine.version === "1.0"
+      convert(null).valid === false
 
-  );
+    );
 
-  const missing = engine.analyze({});
+    test(
 
-  test(
+      "Invalid OHLC rejected",
 
-    "Missing data returns WAIT",
+      convert([
 
-    missing.status === "WAIT"
+        candle("2026.10.30 20:55:00", {
 
-  );
+          High: 99
 
-  const insufficient = engine.analyze({
+        })
 
-    h1: [],
+      ]).valid === false
 
-    m15: [],
+    );
 
-    m5: [],
+    test(
 
-    newsBlocked: false
+      "Zero prices rejected",
 
-  });
+      convert([
 
-  test(
+        candle("2026.10.30 20:55:00", {
 
-    "Insufficient data returns WAIT",
+          Open: 0
 
-    insufficient.status === "WAIT"
+        })
 
-  );
-// V1.1 SAFETY TEST DATA
+      ]).valid === false
 
-  const makeCandles = (count) =>
+    );
 
-    Array.from({ length: count }, () => ({
+    test(
 
-      open: 100,
+      "Negative prices rejected",
 
-      high: 102,
+      convert([
 
-      low: 98,
+        candle("2026.10.30 20:55:00", {
 
-      close: 101
+          Close: -1
 
-    }));
+        })
 
-  const validMarketData = {
+      ]).valid === false
 
-    h1: makeCandles(50),
+    );
 
-    m15: makeCandles(12),
+    test(
 
-    m5: makeCandles(3),
+      "Invalid calendar date rejected",
 
-    newsBlocked: false
+      convert([
 
-  };
+        candle("2026.02.30 20:55:00")
 
-  test(
+      ]).valid === false
 
-    "Unverified news status returns WAIT",
+    );
 
-    engine.analyze({
+    test(
 
-      ...validMarketData,
+      "Invalid timestamp format rejected",
 
-      newsBlocked: undefined
+      convert([
 
-    }).status === "WAIT"
+        candle("30-10-2026 20:55:00")
 
-  );
+      ]).valid === false
 
-  test(
+    );
 
-    "Major news protection returns WAIT",
+    test(
 
-    engine.analyze({
+      "Duplicate timestamps rejected",
 
-      ...validMarketData,
+      convert([
 
-      newsBlocked: true
+        candle("2026.10.30 20:55:00"),
 
-    }).status === "WAIT"
+        candle("2026.10.30 20:55:00")
 
-  );
+      ]).valid === false
 
-  test(
+    );
 
-    "Invalid candle data returns WAIT",
+    test(
 
-    engine.analyze({
+      "Out-of-order timestamps rejected",
 
-      ...validMarketData,
+      convert([
 
-      h1: [
+        candle("2026.10.30 20:55:00"),
 
-        ...validMarketData.h1.slice(0, 49),
+        candle("2026.10.30 20:50:00")
 
-        { open: 100, high: 99, low: 98, close: 101 }
+      ]).valid === false
 
-      ]
+    );
 
-    }).status === "WAIT"
+    test(
 
-  );
+      "Negative tick volume rejected",
 
-  test(
+      convert([
 
-    "Neutral H1 direction returns WAIT",
+        candle("2026.10.30 20:55:00", {
 
-    engine.analyze(validMarketData).status === "WAIT"
+          TickVolume: -1
 
-  );
+        })
 
-   }
-  console.table(results);
-document.body.insertAdjacentHTML(
+      ]).valid === false
 
-  "beforeend",
+    );
 
-  "<pre id='goldguard-test-results'>" +
+    test(
 
-  results.map(item => item.test + ': ' + item.result).join('\n') +
+      "Negative spread rejected",
 
-  "</pre>"
+      convert([
 
-);
+        candle("2026.10.30 20:55:00", {
+
+          Spread: -1
+
+        })
+
+      ]).valid === false
+
+    );
+
+    test(
+
+      "Non-numeric tick volume rejected",
+
+      convert([
+
+        candle("2026.10.30 20:55:00", {
+
+          TickVolume: "invalid"
+
+        })
+
+      ]).valid === false
+
+    );
+
+    test(
+
+      "Non-numeric spread rejected",
+
+      convert([
+
+        candle("2026.10.30 20:55:00", {
+
+          Spread: "invalid"
+
+        })
+
+      ]).valid === false
+
+    );
+
+    test(
+
+      "Missing optional volume and spread accepted",
+
+      convert([
+
+        candle("2026.10.30 20:55:00", {
+
+          TickVolume: undefined,
+
+          Spread: undefined
+
+        })
+
+      ]).valid === true
+
+    );
+
+    test(
+
+      "Valid chronological candles accepted",
+
+      convert([
+
+        candle("2026.10.30 20:50:00"),
+
+        candle("2026.10.30 20:55:00"),
+
+        candle("2026.10.30 21:00:00")
+
+      ]).valid === true
+
+    );
+
+  }
+
+  // DISPLAY RESULTS
 
   const passed = results.filter(
 
@@ -255,10 +484,46 @@ document.body.insertAdjacentHTML(
 
   ).length;
 
+  const failed = results.length - passed;
+
+  console.table(results);
+
+  let output = document.getElementById(
+
+    "goldguard-test-results"
+
+  );
+
+  if (!output) {
+
+    output = document.createElement("pre");
+
+    output.id = "goldguard-test-results";
+
+    document.body.appendChild(output);
+
+  }
+
+  output.textContent =
+
+    "GOLDGUARD TEST SUITE V1.1\n\n" +
+
+    results.map(item =>
+
+      item.test + ": " + item.result
+
+    ).join("\n") +
+
+    "\n\nTOTAL: " + passed + "/" + results.length +
+
+    " PASSED\nFAILED: " + failed;
+
   console.log(
 
-    "GoldGuard tests: " +
+    "GoldGuard V1.1 tests: " +
 
-    passed + "/" + results.length + " passed"
-);
+    passed + "/" + results.length + " passed."
+
+  );
+
 })();
