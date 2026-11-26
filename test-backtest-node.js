@@ -1,22 +1,16 @@
 
 /*
 
- GOLDGUARD NODE BACKTEST TESTS V1.2
+ GOLDGUARD NODE BACKTEST TESTS V1.3
 
- Tests actual historical backtest mechanics.
+ Reliability regression testing.
 
- Execution cost integration:
- - Historical spread.
- - BUY and SELL execution.
- - Slippage.
- - Commission reporting.
- - Take profit and stop loss.
- - SL-first protection.
- - Open trade handling.
- - WAIT signal protection.
+ Preserves V1.2 tests and adds:
+ - SELL stop-loss gap-through execution.
+ - Correct Bid-based SELL exit reference.
+ - Protection against double spread application.
 
- Controlled historical candles only.
-
+ Historical candles only.
  No live market data.
  No real trade execution.
 
@@ -38,7 +32,7 @@ let passed = 0;
 let failed = 0;
 
 console.log("\n==================================");
-console.log(" GOLDGUARD BACKTEST TESTS V1.2");
+console.log(" GOLDGUARD BACKTEST TESTS V1.3");
 console.log("==================================");
 
 function test(name, callback) {
@@ -119,16 +113,20 @@ function makeData(direction, exitMode) {
 
   }
 
-  // Four M5 candles.
+  // Five M5 candles.
+  // Candle 3 executes the pending entry.
+  // Candle 4 tests the trade exit.
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
 
-    let high = 101;
-    let low = 99;
+    let open = 100;
+    let high = 100.5;
+    let low = 99.5;
+    let close = 100;
 
     // Final candle controls simulated exit.
 
-    if (i === 3) {
+    if (i === 4) {
 
       if (direction === "BUY") {
 
@@ -176,16 +174,32 @@ function makeData(direction, exitMode) {
           low = 99;
         }
 
+        // Regression scenario:
+        // Market gaps above the SELL stop loss.
+        // Bid opens at 101.20.
+        // Ask opens at 101.22.
+        // Expected SELL exit must be 101.22,
+        // not 101.24 from double spread application.
+
+        if (exitMode === "SELL_GAP_SL") {
+
+          open = 101.20;
+          high = 101.30;
+          low = 101.10;
+          close = 101.20;
+
+        }
+
       }
 
     }
 
     m5.push(candle(
       base + i * 5 * 60 * 1000,
-      100,
+      open,
       high,
       low,
-      100
+      close
     ));
 
   }
@@ -309,13 +323,9 @@ test("BUY trade reaches take profit", function () {
   const result = simulate("BUY", "TP");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 1);
-
   assert.strictEqual(result.trades[0].direction, "BUY");
-
   assert.strictEqual(result.trades[0].outcome, "WIN");
-
   assert.strictEqual(result.statistics.wins, 1);
 
 });
@@ -327,13 +337,9 @@ test("SELL trade reaches take profit", function () {
   const result = simulate("SELL", "TP");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 1);
-
   assert.strictEqual(result.trades[0].direction, "SELL");
-
   assert.strictEqual(result.trades[0].outcome, "WIN");
-
   assert.strictEqual(result.statistics.wins, 1);
 
 });
@@ -345,11 +351,8 @@ test("BUY trade reaches stop loss", function () {
   const result = simulate("BUY", "SL");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 1);
-
   assert.strictEqual(result.trades[0].outcome, "LOSS");
-
   assert.strictEqual(result.statistics.losses, 1);
 
 });
@@ -361,11 +364,8 @@ test("SELL trade reaches stop loss", function () {
   const result = simulate("SELL", "SL");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 1);
-
   assert.strictEqual(result.trades[0].outcome, "LOSS");
-
   assert.strictEqual(result.statistics.losses, 1);
 
 });
@@ -377,9 +377,7 @@ test("Stop loss wins when SL and TP hit together", function () {
   const result = simulate("BUY", "BOTH");
 
   assert.strictEqual(result.totalTrades, 1);
-
   assert.strictEqual(result.trades[0].outcome, "LOSS");
-
   assert.strictEqual(result.trades[0].exitPrice, 99);
 
 });
@@ -391,11 +389,8 @@ test("Unfinished trade remains open", function () {
   const result = simulate("BUY", "OPEN");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 0);
-
   assert.ok(result.openTrade);
-
   assert.strictEqual(result.openTrade.direction, "BUY");
 
 });
@@ -421,11 +416,8 @@ test("WAIT signals never open trades", function () {
   const result = window.GoldGuardBacktest.run(data);
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.totalTrades, 0);
-
   assert.strictEqual(result.openTrade, null);
-
   assert.ok(result.statistics.waitSignals > 0);
 
 });
@@ -455,7 +447,6 @@ test("BUY entry includes historical spread", function () {
   const result = simulate("BUY", "OPEN");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.openTrade.entry, 100.02);
 
   assert.strictEqual(
@@ -472,12 +463,11 @@ test("SELL entry uses historical Bid", function () {
   const result = simulate("SELL", "OPEN");
 
   assert.strictEqual(result.valid, true);
-
   assert.strictEqual(result.openTrade.entry, 100);
 
 });
 
-// Test 13: Spread and slippage configuration is reported.
+// Test 13: Execution cost configuration is reported.
 
 test("Execution cost configuration is reported", function () {
 
@@ -502,10 +492,41 @@ test("Execution cost configuration is reported", function () {
 
 });
 
+// Test 14: SELL gap-through stop loss uses Bid reference.
+
+test("SELL gap stop loss does not apply spread twice", function () {
+
+  const result = simulate("SELL", "SELL_GAP_SL");
+
+  assert.strictEqual(result.valid, true);
+
+  assert.strictEqual(result.totalTrades, 1);
+
+  const trade = result.trades[0];
+
+  assert.strictEqual(trade.direction, "SELL");
+
+  assert.strictEqual(trade.exitReason, "STOP_LOSS_GAP");
+
+  assert.strictEqual(trade.outcome, "LOSS");
+
+  // Historical Bid opening price: 101.20
+  // Historical spread: 0.02
+  // Expected executable Ask exit: 101.22
+  // Double-spread error would produce 101.24.
+
+  assert.strictEqual(
+    trade.exitPrice,
+    101.22,
+    "SELL gap stop loss applied historical spread more than once"
+  );
+
+});
+
 // Final report.
 
 console.log("\n==================================");
-console.log(" GOLDGUARD TEST REPORT");
+console.log(" GOLDGUARD V1.3 REGRESSION REPORT");
 console.log("==================================");
 
 console.log("PASSED:", passed);
@@ -514,12 +535,12 @@ console.log("TOTAL:", passed + failed);
 
 if (failed > 0) {
 
-  console.error("\nGOLDGUARD TESTS FAILED");
+  console.error("\nGOLDGUARD REGRESSION TESTS FAILED");
 
   process.exitCode = 1;
 
 } else {
 
-  console.log("\nALL GOLDGUARD TESTS PASSED");
+  console.log("\nALL GOLDGUARD REGRESSION TESTS PASSED");
 
 }
