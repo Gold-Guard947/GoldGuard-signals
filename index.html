@@ -5,12 +5,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080a0e">
-<title>GoldGuard Signals</title>
+<meta name="description" content="GoldGuard Signals — disciplined gold market research and trading intelligence.">
+<title>GoldGuard Signals | Dashboard V2</title>
 
 <style>
 :root {
   --bg:#080a0e;
   --panel:#11151c;
+  --panel2:#0b0e13;
   --gold:#f5bd32;
   --gold2:#ffe08a;
   --muted:#929baa;
@@ -28,28 +30,36 @@ body {
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
+button,input {font:inherit}
+button {cursor:pointer}
+
 header {
-  padding:25px 19px 18px;
+  padding:20px 18px;
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
   gap:12px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(8,10,14,.96);
+  backdrop-filter:blur(12px);
 }
 
 .logo {
-  width:49px;
-  height:49px;
-  border-radius:15px;
+  width:46px;
+  height:46px;
+  border-radius:14px;
   display:grid;
   place-items:center;
   background:linear-gradient(145deg,#ffe18b,#b47b08);
   color:#111;
-  font-size:27px;
+  font-size:26px;
   font-weight:900;
 }
 
 .brand {
-  font-size:21px;
+  font-size:20px;
   font-weight:900;
   letter-spacing:1px;
 }
@@ -57,28 +67,42 @@ header {
 .brand span {color:var(--gold)}
 
 .tagline {
-  font-size:10px;
+  font-size:9px;
   color:var(--muted);
-  letter-spacing:2px;
+  letter-spacing:1.8px;
   margin-top:4px;
 }
 
-.bell {
+.header-mode {
   margin-left:auto;
-  font-size:23px;
+  text-align:right;
+}
+
+.header-mode strong {
+  display:block;
+  color:var(--gold);
+  font-size:10px;
+}
+
+.header-mode small {
+  color:var(--muted);
+  font-size:9px;
 }
 
 main {
-  max-width:650px;
+  max-width:760px;
   margin:auto;
-  padding:20px 16px 100px;
+  padding:20px 15px 110px;
 }
+
+.page {display:none}
+.page.active {display:block}
 
 .eyebrow {
   color:var(--gold);
-  font-size:11px;
+  font-size:10px;
   letter-spacing:2px;
-  font-weight:800;
+  font-weight:900;
 }
 
 h1 {
@@ -86,22 +110,57 @@ h1 {
   margin:9px 0;
 }
 
+h2 {font-size:16px}
+
 .sub {
   color:var(--muted);
-  font-size:13px;
+  font-size:12px;
   line-height:1.6;
 }
 
+.gold {color:var(--gold)}
+.green {color:var(--green)}
+.red {color:var(--red)}
+
+.card {
+  background:linear-gradient(145deg,#171b22,#0e1117);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin:14px 0;
+}
+
+.card h2 {margin:0 0 13px}
+
+.section-title {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:25px 0 12px;
+}
+
+.section-title h2 {
+  font-size:16px;
+  margin:0;
+}
+
+.section-title span {
+  color:var(--muted);
+  font-size:10px;
+}
+
 .status {
-  margin:19px 0;
+  margin:17px 0;
   background:#171c22;
   border:1px solid var(--border);
-  border-radius:13px;
+  border-radius:12px;
   padding:13px;
   display:flex;
   align-items:center;
-  gap:10px;
-  font-size:12px;
+  gap:11px;
+  font-size:11px;
+  line-height:1.6;
 }
 
 .dot {
@@ -109,39 +168,33 @@ h1 {
   height:9px;
   border-radius:50%;
   background:var(--gold);
+  flex-shrink:0;
 }
 
 .status strong {color:var(--gold)}
 
-.card {
-  background:linear-gradient(145deg,#171b22,#0e1117);
-  border:1px solid var(--border);
-  border-radius:17px;
-  padding:18px;
-  margin:15px 0;
-}
-
-.card h2 {
-  font-size:16px;
-  margin:0 0 15px;
+.signal-card {
+  border-color:#66501e;
+  background:linear-gradient(145deg,#201a0d,#11151c 65%);
 }
 
 .signal-top {
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:10px;
 }
 
 .pair {
-  font-size:23px;
+  font-size:24px;
   font-weight:900;
 }
 
 .pair small {
   display:block;
   color:var(--muted);
-  font-size:12px;
-  font-weight:400;
+  font-size:10px;
+  font-weight:500;
   margin-top:4px;
 }
 
@@ -149,151 +202,184 @@ h1 {
   color:var(--gold);
   border:1px solid #80611d;
   border-radius:20px;
-  padding:6px 10px;
-  font-size:10px;
+  padding:6px 9px;
+  font-size:9px;
+  white-space:nowrap;
 }
 
 .wait {
-  font-size:34px;
-  font-weight:900;
+  font-size:38px;
+  font-weight:950;
   color:var(--gold);
-  margin:23px 0 5px;
+  margin:20px 0 4px;
+  letter-spacing:2px;
 }
 
-.grid {
+.metric-grid {
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:18px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-top:17px;
 }
 
 .metric {
-  background:#0b0e13;
+  background:var(--panel2);
   border:1px solid var(--border);
   border-radius:11px;
   padding:12px;
+  min-width:0;
 }
 
 .metric label {
   display:block;
   color:var(--muted);
-  font-size:11px;
+  font-size:10px;
 }
 
 .metric strong {
   display:block;
   margin-top:7px;
-  font-size:14px;
+  font-size:13px;
+  overflow-wrap:anywhere;
 }
 
 .note {
   color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-  margin-top:15px;
+  font-size:11px;
+  line-height:1.65;
+  margin-top:13px;
 }
 
-.section-title {
+.data-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+
+.data-box {
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:13px;
+}
+
+.data-box small {
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.data-box strong {
+  display:block;
+  margin-top:8px;
+  font-size:13px;
+}
+
+.timeframe-row {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin:25px 0 12px;
+  gap:10px;
+  padding:13px 2px;
+  border-bottom:1px solid var(--border);
 }
 
-.section-title h2 {
-  font-size:17px;
-  margin:0;
+.timeframe-row:last-child {border:0}
+
+.timeframe-name {
+  font-weight:900;
+  color:var(--gold);
+  font-size:13px;
 }
 
-.gold {color:var(--gold)}
+.timeframe-description {
+  color:var(--muted);
+  font-size:10px;
+  margin-top:4px;
+}
+
+.timeframe-status {
+  font-size:10px;
+  color:var(--gold);
+  border:1px solid #66501e;
+  border-radius:20px;
+  padding:5px 8px;
+  white-space:nowrap;
+}
 
 .market {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:14px 3px;
+  padding:13px 2px;
   border-bottom:1px solid var(--border);
 }
 
 .market:last-child {border:0}
 
+.market b {font-size:13px}
+
 .market small {
   display:block;
   color:var(--muted);
   margin-top:4px;
+  font-size:10px;
 }
 
-.market b {font-size:14px}
-
-button {font:inherit;cursor:pointer}
-
-.action {
-  width:100%;
-  padding:14px;
-  border-radius:11px;
-  border:1px solid #9c741d;
-  background:#30250e;
-  color:var(--gold2);
-  font-weight:800;
-  margin-top:15px;
-}
-
-nav {
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#10141c;
-  border-top:1px solid var(--border);
-  display:flex;
-  justify-content:space-around;
-  padding:10px 3px calc(10px + env(safe-area-inset-bottom));
-}
-
-nav button {
-  background:none;
-  border:0;
-  color:var(--muted);
+.market-value {
+  color:var(--gold);
   font-size:11px;
-  padding:5px;
+  text-align:right;
 }
-
-nav button span {
-  display:block;
-  font-size:20px;
-  margin-bottom:4px;
-}
-
-nav button.active {color:var(--gold)}
-
-.page {display:none}
-.page.active {display:block}
 
 .feature {
   border:1px solid var(--border);
   padding:14px;
   border-radius:12px;
   margin:10px 0;
+  background:#11151c;
 }
 
 .feature b {color:var(--gold)}
 
-footer {
-  text-align:center;
-  color:#737d8c;
-  font-size:11px;
-  padding:20px;
+.action {
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid #9c741d;
+  background:#30250e;
+  color:var(--gold2);
+  font-weight:900;
+  margin-top:13px;
 }
 
-/* AUTOMATED TEST REPORT */
+.action:disabled {
+  opacity:.6;
+  cursor:wait;
+}
+
+input {
+  width:100%;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  color:white;
+  padding:12px;
+  border-radius:9px;
+  margin:7px 0 14px;
+}
+
+label {
+  color:var(--muted);
+  font-size:11px;
+}
 
 .report-status {
   display:inline-block;
   border:1px solid var(--border);
   border-radius:20px;
   padding:6px 10px;
-  font-size:10px;
-  font-weight:800;
+  font-size:9px;
+  font-weight:900;
   color:var(--gold);
 }
 
@@ -316,22 +402,21 @@ footer {
 
 .report-stats {
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:8px;
   margin:16px 0;
 }
 
 .report-stat {
-  background:#0b0e13;
+  background:var(--panel2);
   border:1px solid var(--border);
-  border-radius:11px;
-  padding:12px 8px;
+  border-radius:10px;
+  padding:11px 8px;
 }
 
 .report-stat label {
   display:block;
-  color:var(--muted);
-  font-size:10px;
+  font-size:9px;
 }
 
 .report-stat strong {
@@ -340,12 +425,12 @@ footer {
   margin-top:7px;
 }
 
-.report-stat .passed-number {color:var(--green)}
-.report-stat .failed-number {color:var(--red)}
+.passed-number {color:var(--green)}
+.failed-number {color:var(--red)}
 
 .report-progress {
-  height:9px;
-  background:#292f3a;
+  height:8px;
+  background:var(--border);
   border-radius:20px;
   overflow:hidden;
   margin:12px 0;
@@ -363,18 +448,22 @@ footer {
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  padding:12px 0;
+  padding:11px 0;
   border-bottom:1px solid var(--border);
-  font-size:12px;
+  font-size:11px;
 }
 
-.suite-row:last-child {border-bottom:0}
+.suite-row:last-child {border:0}
 
-.suite-name {line-height:1.5}
+.suite-name {
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
 
 .suite-result {
   white-space:nowrap;
-  font-weight:800;
+  font-weight:900;
+  font-size:10px;
 }
 
 .suite-result.passed {color:var(--green)}
@@ -383,7 +472,7 @@ footer {
 
 .report-meta {
   color:var(--muted);
-  font-size:10px;
+  font-size:9px;
   line-height:1.7;
   overflow-wrap:anywhere;
 }
@@ -395,23 +484,52 @@ footer {
   border:1px solid #80611d;
   background:#30250e;
   color:var(--gold2);
-  font-weight:800;
-  margin-top:14px;
+  font-weight:900;
+  margin-top:13px;
 }
 
-input {
-  width:100%;
-  background:#0b0e13;
-  border:1px solid var(--border);
-  color:white;
-  padding:12px;
-  border-radius:9px;
-  margin:7px 0 14px;
+nav {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:20;
+  background:rgba(16,20,28,.97);
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-around;
+  padding:9px 2px calc(9px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(12px);
 }
 
-label {
+nav button {
+  background:none;
+  border:0;
   color:var(--muted);
-  font-size:12px;
+  font-size:9px;
+  padding:4px 5px;
+  min-width:54px;
+}
+
+nav button span {
+  display:block;
+  font-size:19px;
+  margin-bottom:4px;
+}
+
+nav button.active {color:var(--gold)}
+
+footer {
+  text-align:center;
+  color:#737d8c;
+  font-size:10px;
+  padding:20px 5px;
+}
+
+@media(min-width:600px) {
+  main {padding-left:22px;padding-right:22px}
+  .metric-grid {grid-template-columns:repeat(4,minmax(0,1fr))}
+  .data-grid {grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -424,26 +542,67 @@ label {
     <div class="brand">GOLD<span>GUARD</span></div>
     <div class="tagline">SIGNALS • ANALYSE • CONFIRM</div>
   </div>
-  <div class="bell">♧</div>
+  <div class="header-mode">
+    <strong>DEVELOPMENT V2.0</strong>
+    <small>MANUAL RESEARCH MODE</small>
+  </div>
 </header>
 
 <main>
 
+<!-- HOME DASHBOARD -->
+
 <section class="page active" id="home">
 
-  <div class="eyebrow">WELCOME TO GOLDGUARD</div>
+  <div class="eyebrow">GOLDGUARD COMMAND CENTRE</div>
   <h1>Trade with discipline.</h1>
-  <p class="sub">Premium market analysis. Quality setups. Risk first.</p>
+  <p class="sub">
+    Market intelligence. Verified setups. Risk before reward.
+  </p>
 
   <div class="status">
     <span class="dot"></span>
     <div>
-      <strong>PREVIEW MODE</strong><br>
-      Live market data not connected yet
+      <strong>HISTORICAL / PREVIEW MODE</strong><br>
+      Live market prices and live signal generation are not connected.
     </div>
   </div>
 
-  <div class="card">
+  <!-- SYSTEM OVERVIEW -->
+
+  <div class="section-title">
+    <h2>System overview</h2>
+    <span>CONNECTION STATUS</span>
+  </div>
+
+  <div class="data-grid">
+    <div class="data-box">
+      <small>Market feed</small>
+      <strong class="gold">Not connected</strong>
+    </div>
+    <div class="data-box">
+      <small>Signal engine</small>
+      <strong class="gold">Preview only</strong>
+    </div>
+    <div class="data-box">
+      <small>Execution</small>
+      <strong class="gold">Manual only</strong>
+    </div>
+    <div class="data-box">
+      <small>Test reporting</small>
+      <strong class="green">Connected</strong>
+    </div>
+  </div>
+
+  <!-- SIGNAL COMMAND CENTRE -->
+
+  <div class="section-title">
+    <h2>Primary trading instrument</h2>
+    <span class="gold">01 / XAUUSD</span>
+  </div>
+
+  <div class="card signal-card">
+
     <div class="signal-top">
       <div class="pair">
         XAUUSD
@@ -454,37 +613,179 @@ label {
 
     <div class="wait">WAIT</div>
 
-    <div class="sub">
+    <p class="sub">
       No verified trading setup currently available.
-    </div>
+    </p>
 
-    <div class="grid">
+    <div class="metric-grid">
       <div class="metric">
         <label>Entry</label>
-        <strong>Awaiting setup</strong>
+        <strong>Not available</strong>
       </div>
       <div class="metric">
-        <label>Stop Loss</label>
-        <strong>Not set</strong>
+        <label>Stop loss</label>
+        <strong>Not available</strong>
       </div>
       <div class="metric">
-        <label>Take Profit</label>
-        <strong>Not set</strong>
+        <label>Take profit</label>
+        <strong>Not available</strong>
       </div>
       <div class="metric">
-        <label>Risk per trade</label>
-        <strong>0.5% maximum</strong>
+        <label>Risk limit</label>
+        <strong>0.5% target</strong>
       </div>
     </div>
 
     <p class="note">
-      This is a development preview, not a live trading signal.
-      GoldGuard will only publish a setup after its analysis and
-      risk checks are implemented.
+      No BUY or SELL recommendation is being issued. A setup must
+      pass the strategy, confirmation and risk checks before it can
+      become a verified signal.
+    </p>
+
+  </div>
+
+  <!-- STRATEGY MONITOR -->
+
+  <div class="section-title">
+    <h2>Multi-timeframe monitor</h2>
+    <span>SMC + ICT</span>
+  </div>
+
+  <div class="card">
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">H1</div>
+        <div class="timeframe-description">Higher-timeframe direction</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M15</div>
+        <div class="timeframe-description">Liquidity and structure</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M5</div>
+        <div class="timeframe-description">Entry confirmation</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M1</div>
+        <div class="timeframe-description">Optional entry refinement</div>
+      </div>
+      <span class="timeframe-status">Optional</span>
+    </div>
+
+  </div>
+
+  <!-- RISK MANAGEMENT -->
+
+  <div class="section-title">
+    <h2>Risk management</h2>
+    <span>CAPITAL PROTECTION</span>
+  </div>
+
+  <div class="card">
+    <div class="data-grid">
+      <div class="data-box">
+        <small>Target risk</small>
+        <strong>0.5%</strong>
+      </div>
+      <div class="data-box">
+        <small>Target reward / risk</small>
+        <strong>1 : 2</strong>
+      </div>
+      <div class="data-box">
+        <small>Execution mode</small>
+        <strong>Manual MT5</strong>
+      </div>
+      <div class="data-box">
+        <small>Broker reference</small>
+        <strong>Exness Standard</strong>
+      </div>
+    </div>
+    <p class="note">
+      These are strategy configuration targets, not a guarantee
+      of trade outcomes or a live account risk calculation.
+    </p>
+  </div>
+
+  <!-- NEWS PROTECTION -->
+
+  <div class="section-title">
+    <h2>Economic news protection</h2>
+    <span>FUNDAMENTAL FILTER</span>
+  </div>
+
+  <div class="card">
+    <div class="signal-top">
+      <h2 class="gold">Major news filter</h2>
+      <span class="pill">NOT CONNECTED</span>
+    </div>
+    <p class="sub">
+      Economic calendar data is not connected. The live news-blocking
+      function is not currently active.
+    </p>
+    <p class="note">
+      Planned events: CPI, NFP, FOMC and other high-impact releases.
+      Do not treat this preview as confirmation that news risk is blocked.
+    </p>
+  </div>
+
+  <!-- BACKTEST MONITOR -->
+
+  <div class="section-title">
+    <h2>Backtest monitor</h2>
+    <span>HISTORICAL RESEARCH</span>
+  </div>
+
+  <div class="card">
+    <div class="signal-top">
+      <h2 class="gold">Backtest engine</h2>
+      <span class="pill">SOFTWARE TESTED</span>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-box">
+        <small>Engine</small>
+        <strong>V1.2</strong>
+      </div>
+      <div class="data-box">
+        <small>Cost model</small>
+        <strong>V1.3</strong>
+      </div>
+      <div class="data-box">
+        <small>Trading results</small>
+        <strong>Not displayed</strong>
+      </div>
+      <div class="data-box">
+        <small>Live execution</small>
+        <strong>Disabled</strong>
+      </div>
+    </div>
+
+    <p class="note">
+      Passing software tests does not establish strategy profitability.
+      Verified historical trading performance will be displayed only
+      when a validated performance report is connected.
     </p>
   </div>
 
   <!-- AUTOMATED TEST REPORT -->
+
+  <div class="section-title">
+    <h2>Software reliability</h2>
+    <span>GITHUB ACTIONS</span>
+  </div>
 
   <div class="card" id="automated-test-report">
 
@@ -496,33 +797,26 @@ label {
     </div>
 
     <p class="sub">
-      Live report generated from GoldGuard GitHub Actions.
+      Automated results published by the GoldGuard GitHub workflow.
     </p>
 
     <div class="report-stats">
-
       <div class="report-stat">
         <label>PASSED</label>
         <strong id="report-passed" class="passed-number">—</strong>
       </div>
-
       <div class="report-stat">
         <label>FAILED</label>
         <strong id="report-failed" class="failed-number">—</strong>
       </div>
-
       <div class="report-stat">
         <label>TOTAL</label>
         <strong id="report-total">—</strong>
       </div>
-
     </div>
 
     <div class="report-progress">
-      <div
-        id="report-progress-fill"
-        class="report-progress-fill">
-      </div>
+      <div id="report-progress-fill" class="report-progress-fill"></div>
     </div>
 
     <div class="section-title">
@@ -557,16 +851,23 @@ label {
 
   <!-- HISTORICAL TEST -->
 
+  <div class="section-title">
+    <h2>Historical data laboratory</h2>
+    <span>RESEARCH ONLY</span>
+  </div>
+
   <div class="card" id="historical-test">
 
     <h2 class="gold">Historical Data Test</h2>
 
-    <p class="sub">XAUUSD historical analysis only.</p>
+    <p class="sub">
+      Run the existing historical test workflow for XAUUSD.
+    </p>
 
-    <label>Start date</label>
+    <label for="test-from">Start date</label>
     <input id="test-from" type="date" value="2026-09-28">
 
-    <label>End date</label>
+    <label for="test-to">End date</label>
     <input id="test-to" type="date" value="2026-10-01">
 
     <button
@@ -577,69 +878,123 @@ label {
     </button>
 
     <p id="historical-test-status" class="note">
-      Waiting for test. No live trading.
+      Waiting for test. Historical data only. No live trading.
     </p>
 
   </div>
 
+  <!-- WATCHLIST -->
+
   <div class="section-title">
     <h2>Market watchlist</h2>
-    <span class="gold">01 / 03</span>
+    <span>MONITORING</span>
   </div>
 
   <div class="card">
 
     <div class="market">
-      <div><b>XAUUSD</b><small>Gold</small></div>
-      <b class="gold">Awaiting data</b>
+      <div><b>XAUUSD</b><small>Gold / US Dollar</small></div>
+      <div class="market-value">Awaiting data</div>
     </div>
 
     <div class="market">
       <div><b>EURUSD</b><small>Euro / US Dollar</small></div>
-      <b class="gold">Coming soon</b>
+      <div class="market-value">Planned</div>
     </div>
 
     <div class="market">
       <div><b>GBPUSD</b><small>Pound / US Dollar</small></div>
-      <b class="gold">Coming soon</b>
+      <div class="market-value">Planned</div>
+    </div>
+
+    <div class="market">
+      <div><b>NASDAQ</b><small>US technology index</small></div>
+      <div class="market-value">Planned</div>
     </div>
 
   </div>
 
 </section>
+
+<!-- ANALYSIS PAGE -->
 
 <section class="page" id="analysis">
 
   <div class="eyebrow">INTELLIGENCE CENTRE</div>
   <h1>Market Analysis</h1>
-  <p class="sub">Our multi-timeframe analysis framework.</p>
+  <p class="sub">
+    GoldGuard's multi-timeframe SMC and ICT analysis framework.
+  </p>
 
-  <div class="feature">
-    <b>H1</b>
-    <p class="sub">Higher-timeframe market direction and structure.</p>
+  <div class="card">
+    <h2 class="gold">Analysis sequence</h2>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">H1</div>
+        <div class="timeframe-description">Trend and market structure</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M15</div>
+        <div class="timeframe-description">Liquidity sweep and setup context</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M5</div>
+        <div class="timeframe-description">Entry confirmation</div>
+      </div>
+      <span class="timeframe-status">Awaiting data</span>
+    </div>
+
+    <div class="timeframe-row">
+      <div>
+        <div class="timeframe-name">M1</div>
+        <div class="timeframe-description">Optional refinement</div>
+      </div>
+      <span class="timeframe-status">Optional</span>
+    </div>
   </div>
 
   <div class="feature">
-    <b>M15</b>
-    <p class="sub">Liquidity, order blocks and confirmation.</p>
+    <b>Smart Money Concepts</b>
+    <p class="sub">
+      Structure, liquidity, order blocks and market displacement.
+    </p>
   </div>
 
   <div class="feature">
-    <b>M5</b>
-    <p class="sub">Entry confirmation and execution planning.</p>
+    <b>ICT framework</b>
+    <p class="sub">
+      Liquidity concepts, fair value gaps and confirmation.
+    </p>
   </div>
 
   <div class="feature">
-    <b>M1</b>
-    <p class="sub">Optional entry refinement.</p>
+    <b>Fundamental analysis</b>
+    <p class="sub">
+      Economic events and macroeconomic context are planned
+      components of the strategy.
+    </p>
   </div>
 
-  <div class="feature">
-    <b>SMC + ICT</b>
-    <p class="sub">Structure, liquidity and displacement analysis.</p>
+  <div class="status">
+    <span class="dot"></span>
+    <div>
+      <strong>ANALYSIS DATA NOT CONNECTED</strong><br>
+      This page describes the strategy framework, not current market conditions.
+    </div>
   </div>
 
 </section>
+
+<!-- NEWS PAGE -->
 
 <section class="page" id="news">
 
@@ -647,24 +1002,44 @@ label {
   <h1>Economic News</h1>
 
   <p class="sub">
-    Major news events can cause volatility in gold and currency markets.
+    Major economic announcements can increase volatility in gold markets.
   </p>
 
   <div class="card">
-    <h2 class="gold">News protection</h2>
+    <div class="signal-top">
+      <h2 class="gold">News protection</h2>
+      <span class="pill">NOT CONNECTED</span>
+    </div>
 
     <p class="sub">
-      Economic calendar connection not configured yet.
+      Economic calendar connection has not been configured.
     </p>
 
+    <div class="feature">
+      <b>CPI</b>
+      <p class="sub">Consumer inflation announcements.</p>
+    </div>
+
+    <div class="feature">
+      <b>NFP</b>
+      <p class="sub">US employment announcements.</p>
+    </div>
+
+    <div class="feature">
+      <b>FOMC</b>
+      <p class="sub">Federal Reserve policy announcements.</p>
+    </div>
+
     <p class="note">
-      Planned: CPI, NFP, FOMC and other high-impact announcements.
-      New entries will be blocked around major news events according
-      to our safety rules.
+      Planned rule: block new entries around selected high-impact events.
+      Until the calendar and filter are connected and validated,
+      news protection must be considered unavailable.
     </p>
   </div>
 
 </section>
+
+<!-- HISTORY PAGE -->
 
 <section class="page" id="history">
 
@@ -672,19 +1047,41 @@ label {
   <h1>Signal History</h1>
 
   <div class="card">
-    <h2>Our trading record</h2>
+    <h2 class="gold">Verified trading record</h2>
 
     <p class="sub">
-      No verified signals recorded yet.
+      No verified live or demo signals have been recorded here yet.
     </p>
 
+    <div class="data-grid">
+      <div class="data-box">
+        <small>Verified signals</small>
+        <strong>Not available</strong>
+      </div>
+      <div class="data-box">
+        <small>Win rate</small>
+        <strong>Not calculated</strong>
+      </div>
+      <div class="data-box">
+        <small>Profit factor</small>
+        <strong>Not calculated</strong>
+      </div>
+      <div class="data-box">
+        <small>Drawdown</small>
+        <strong>Not calculated</strong>
+      </div>
+    </div>
+
     <p class="note">
-      Only real, timestamped and independently tracked signal
-      outcomes will appear here. No invented win rates or profit figures.
+      Only timestamped signals with documented entries, exits,
+      costs and outcomes will be included. No invented performance
+      figures will be displayed.
     </p>
   </div>
 
 </section>
+
+<!-- PROFILE PAGE -->
 
 <section class="page" id="profile">
 
@@ -697,8 +1094,18 @@ label {
   </div>
 
   <div class="feature">
+    <b>Reward-to-risk target</b>
+    <p class="sub">1:2 strategy target.</p>
+  </div>
+
+  <div class="feature">
+    <b>Broker reference</b>
+    <p class="sub">Exness Standard. Reference configuration only.</p>
+  </div>
+
+  <div class="feature">
     <b>Trading mode</b>
-    <p class="sub">Manual MT5 execution.</p>
+    <p class="sub">Manual MT5 execution. No automated live trading.</p>
   </div>
 
   <div class="feature">
@@ -707,14 +1114,16 @@ label {
   </div>
 
   <div class="feature">
-    <b>Version</b>
-    <p class="sub">GoldGuard Signals V1.0 – Development preview.</p>
+    <b>Application version</b>
+    <p class="sub">GoldGuard Signals V2.0 — Development preview.</p>
   </div>
 
 </section>
 
 <footer>
   GOLDGUARD SIGNALS • BUILT WITH DISCIPLINE 🦁
+  <br>
+  HISTORICAL RESEARCH • MANUAL EXECUTION • RISK FIRST
 </footer>
 
 </main>
@@ -740,28 +1149,34 @@ label {
 <script>
 /* NAVIGATION */
 
-document.querySelectorAll("nav button").forEach(button => {
+(function () {
 
-  button.addEventListener("click", () => {
+  "use strict";
 
-    document.querySelectorAll(".page").forEach(page =>
-      page.classList.remove("active")
-    );
+  const buttons = document.querySelectorAll("nav button");
+  const pages = document.querySelectorAll(".page");
 
-    document.querySelectorAll("nav button").forEach(item =>
-      item.classList.remove("active")
-    );
+  buttons.forEach(button => {
 
-    document.getElementById(button.dataset.page)
-      .classList.add("active");
+    button.addEventListener("click", () => {
 
-    button.classList.add("active");
+      const target = document.getElementById(button.dataset.page);
 
-    window.scrollTo(0,0);
+      if (!target) return;
+
+      pages.forEach(page => page.classList.remove("active"));
+      buttons.forEach(item => item.classList.remove("active"));
+
+      target.classList.add("active");
+      button.classList.add("active");
+
+      window.scrollTo(0, 0);
+
+    });
 
   });
 
-});
+})();
 
 
 /* AUTOMATED TEST REPORT CONNECTION */
@@ -789,7 +1204,6 @@ document.querySelectorAll("nav button").forEach(button => {
   function setStatus(status) {
 
     elements.status.textContent = status;
-
     elements.status.className = "report-status";
 
     if (status === "PASSED") {
@@ -800,6 +1214,10 @@ document.querySelectorAll("nav button").forEach(button => {
       elements.status.classList.add("incomplete");
     }
 
+  }
+
+  function validCount(value) {
+    return Number.isInteger(value) && value >= 0;
   }
 
   function addSuiteRow(suite) {
@@ -814,7 +1232,11 @@ document.querySelectorAll("nav button").forEach(button => {
     const result = document.createElement("span");
     result.className = "suite-result";
 
-    if (suite.status === "PASSED") {
+    if (
+      suite.status === "PASSED" &&
+      validCount(suite.passed) &&
+      validCount(suite.total)
+    ) {
 
       result.classList.add("passed");
       result.textContent =
@@ -824,7 +1246,9 @@ document.querySelectorAll("nav button").forEach(button => {
 
       result.classList.add("failed");
       result.textContent =
-        suite.passed + "/" + suite.total + " FAILED";
+        validCount(suite.passed)
+          ? suite.passed + "/" + suite.total + " FAILED"
+          : "FAILED";
 
     } else {
 
@@ -857,10 +1281,6 @@ document.querySelectorAll("nav button").forEach(button => {
 
   }
 
-  function validCount(value) {
-    return Number.isInteger(value) && value >= 0;
-  }
-
   function renderReport(report) {
 
     if (
@@ -871,8 +1291,10 @@ document.querySelectorAll("nav button").forEach(button => {
       !validCount(report.summary.failed) ||
       !validCount(report.summary.total)
     ) {
+
       showError("The test report format is invalid.");
       return;
+
     }
 
     const summary = report.summary;
@@ -880,8 +1302,10 @@ document.querySelectorAll("nav button").forEach(button => {
     if (
       summary.passed + summary.failed !== summary.total
     ) {
+
       showError("The test report totals do not match.");
       return;
+
     }
 
     elements.passed.textContent = summary.passed;
@@ -894,16 +1318,29 @@ document.querySelectorAll("nav button").forEach(button => {
 
     elements.progress.style.width = percentage + "%";
 
+    const suitesValid = report.suites.length === 7 &&
+      report.suites.every(suite =>
+        suite &&
+        typeof suite.name === "string" &&
+        suite.status === "PASSED" &&
+        validCount(suite.passed) &&
+        validCount(suite.failed) &&
+        validCount(suite.total) &&
+        suite.passed + suite.failed === suite.total &&
+        suite.failed === 0
+      );
+
     const complete =
       report.status === "PASSED" &&
+      summary.failed === 0 &&
       summary.suitesIncomplete === 0 &&
       summary.suitesFailed === 0 &&
-      report.suites.length === 7;
+      suitesValid;
 
     setStatus(
       complete
         ? "PASSED"
-        : summary.suitesFailed > 0
+        : summary.failed > 0 || summary.suitesFailed > 0
           ? "FAILED"
           : "INCOMPLETE"
     );
@@ -957,9 +1394,11 @@ document.querySelectorAll("nav button").forEach(button => {
       );
 
       if (!response.ok) {
+
         throw new Error(
           "Report request returned HTTP " + response.status
         );
+
       }
 
       const report = await response.json();
@@ -990,6 +1429,8 @@ document.querySelectorAll("nav button").forEach(button => {
 })();
 
 </script>
+
+<!-- EXISTING GOLDGUARD PROJECT SCRIPTS -->
 
 <script src="data-adapter.js"></script>
 <script src="signal-engine.js"></script>
