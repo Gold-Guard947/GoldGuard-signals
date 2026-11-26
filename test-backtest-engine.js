@@ -10,8 +10,9 @@
  - Backtest Engine V1.2
  - Execution Cost Model V1.3
 
- Historical simulation only.
+ Node.js and browser compatible.
 
+ Historical simulation only.
  No live market feed.
  No real trade execution.
 
@@ -20,6 +21,49 @@
 (function () {
 
   "use strict";
+
+  const root = globalThis;
+
+  const isNode =
+    typeof process !== "undefined" &&
+    !!process.versions &&
+    !!process.versions.node;
+
+  // Node.js compatibility
+  if (isNode) {
+
+    root.window = root;
+
+    if (!root.document) {
+
+      root.document = {
+
+        createElement: function () {
+
+          return {
+            style: {},
+            textContent: "",
+            innerHTML: ""
+          };
+
+        },
+
+        body: {
+          appendChild: function () {}
+        }
+
+      };
+
+    }
+
+    // Load browser-global project files in dependency order.
+    require("./data-adapter.js");
+    require("./signal-engine.js");
+    require("./historical-integration.js");
+    require("./execution-cost.js");
+    require("./backtest-engine.js");
+
+  }
 
   const panel = document.createElement("div");
 
@@ -111,33 +155,75 @@
 
   }
 
+  function finish() {
+
+    const passed = results.filter(
+      item => item.passed
+    ).length;
+
+    const failed = results.length - passed;
+
+    const total = results.length;
+
+    const output = [
+
+      "GOLDGUARD BACKTEST TEST SUITE V1.2",
+
+      "",
+
+      ...results.map(item =>
+
+        (item.passed ? "PASS: " : "FAIL: ") +
+        item.name
+
+      ),
+
+      "",
+
+      "PASSED: " + passed,
+      "FAILED: " + failed,
+      "TOTAL: " + total,
+
+      "",
+
+      "Historical simulation tests only."
+
+    ].join("\n");
+
+    panel.innerHTML = output.replace(/\n/g, "<br>");
+
+    document.body.appendChild(panel);
+
+    console.log(output);
+
+    if (isNode && failed > 0) {
+      process.exitCode = 1;
+    }
+
+  }
+
   const engine = window.GoldGuardBacktest;
 
   const originalIntegration =
     window.GoldGuardHistoricalIntegration;
 
   test(
-
     "Backtest engine exists",
-
     !!engine && typeof engine.run === "function"
-
   );
 
   test(
-
     "Correct backtest version",
-
     !!engine && engine.version === "1.2"
-
   );
 
   if (!engine || typeof engine.run !== "function") {
 
-    panel.textContent =
-      "BACKTEST TESTS STOPPED: Engine unavailable.";
+    console.error(
+      "BACKTEST TESTS STOPPED: Engine unavailable."
+    );
 
-    document.body.appendChild(panel);
+    finish();
 
     return;
 
@@ -160,11 +246,8 @@
     });
 
     test(
-
       "Missing integration safely rejected",
-
       result.valid === false
-
     );
 
   } catch (error) {
@@ -188,11 +271,8 @@
     const result = engine.run(null);
 
     test(
-
       "Missing historical data rejected",
-
       result.valid === false
-
     );
 
   } catch (error) {
@@ -219,12 +299,9 @@
     });
 
     test(
-
       "Unverified news status rejected",
-
       result.valid === false &&
       result.reason === "News status must be verified"
-
     );
 
   } catch (error) {
@@ -254,11 +331,8 @@
     });
 
     test(
-
       "Invalid candle data rejected",
-
       result.valid === false
-
     );
 
   } catch (error) {
@@ -309,11 +383,8 @@
     });
 
     test(
-
       "Out-of-order candles rejected",
-
       result.valid === false
-
     );
 
   } catch (error) {
@@ -380,48 +451,33 @@
     });
 
     test(
-
       "Valid historical simulation completes",
-
       result.valid === true &&
       result.status === "COMPLETED"
-
     );
 
     test(
-
       "Simulation reports historical-only mode",
-
       result.mode === "HISTORICAL SIMULATION ONLY"
-
     );
 
     test(
-
       "Simulation returns statistics",
-
       !!result.statistics &&
       Number.isFinite(
         result.statistics.candlesProcessed
       )
-
     );
 
     test(
-
       "WAIT signals do not create trades",
-
       result.totalTrades === 0
-
     );
 
     test(
-
       "Simulation reports assumptions",
-
       Array.isArray(result.assumptions) &&
       result.assumptions.length > 0
-
     );
 
   } catch (error) {
@@ -431,6 +487,11 @@
       false
     );
 
+    console.error(
+      "Historical simulation test error:",
+      error
+    );
+
   } finally {
 
     window.GoldGuardHistoricalIntegration =
@@ -438,34 +499,8 @@
 
   }
 
-  // Test results
+  // Print results
 
-  const passed = results.filter(
-    item => item.passed
-  ).length;
-
-  const failed = results.length - passed;
-
-  panel.innerHTML =
-
-    "<strong>GOLDGUARD BACKTEST TEST SUITE V1.2</strong>" +
-
-    "<br><br>" +
-
-    results.map(item =>
-
-      (item.passed ? "PASS ✓ " : "FAIL ✗ ") +
-      item.name
-
-    ).join("<br>") +
-
-    "<br><br>" +
-
-    "RESULT: " + passed + " PASS | " +
-    failed + " FAIL" +
-
-    "<br>Historical simulation tests only.";
-
-  document.body.appendChild(panel);
+  finish();
 
 })();
