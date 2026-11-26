@@ -550,8 +550,6 @@ footer {
 
 <main>
 
-<!-- HOME DASHBOARD -->
-
 <section class="page active" id="home">
 
   <div class="eyebrow">GOLDGUARD COMMAND CENTRE</div>
@@ -567,8 +565,6 @@ footer {
       Live market prices and live signal generation are not connected.
     </div>
   </div>
-
-  <!-- SYSTEM OVERVIEW -->
 
   <div class="section-title">
     <h2>System overview</h2>
@@ -594,15 +590,12 @@ footer {
     </div>
   </div>
 
-  <!-- SIGNAL COMMAND CENTRE -->
-
   <div class="section-title">
     <h2>Primary trading instrument</h2>
     <span class="gold">01 / XAUUSD</span>
   </div>
 
   <div class="card signal-card">
-
     <div class="signal-top">
       <div class="pair">
         XAUUSD
@@ -641,10 +634,7 @@ footer {
       pass the strategy, confirmation and risk checks before it can
       become a verified signal.
     </p>
-
   </div>
-
-  <!-- STRATEGY MONITOR -->
 
   <div class="section-title">
     <h2>Multi-timeframe monitor</h2>
@@ -652,7 +642,6 @@ footer {
   </div>
 
   <div class="card">
-
     <div class="timeframe-row">
       <div>
         <div class="timeframe-name">H1</div>
@@ -684,10 +673,7 @@ footer {
       </div>
       <span class="timeframe-status">Optional</span>
     </div>
-
   </div>
-
-  <!-- RISK MANAGEMENT -->
 
   <div class="section-title">
     <h2>Risk management</h2>
@@ -719,8 +705,6 @@ footer {
     </p>
   </div>
 
-  <!-- NEWS PROTECTION -->
-
   <div class="section-title">
     <h2>Economic news protection</h2>
     <span>FUNDAMENTAL FILTER</span>
@@ -740,8 +724,6 @@ footer {
       Do not treat this preview as confirmation that news risk is blocked.
     </p>
   </div>
-
-  <!-- BACKTEST MONITOR -->
 
   <div class="section-title">
     <h2>Backtest monitor</h2>
@@ -779,8 +761,6 @@ footer {
       when a validated performance report is connected.
     </p>
   </div>
-
-  <!-- AUTOMATED TEST REPORT -->
 
   <div class="section-title">
     <h2>Software reliability</h2>
@@ -849,8 +829,6 @@ footer {
 
   </div>
 
-  <!-- HISTORICAL TEST -->
-
   <div class="section-title">
     <h2>Historical data laboratory</h2>
     <span>RESEARCH ONLY</span>
@@ -883,15 +861,12 @@ footer {
 
   </div>
 
-  <!-- WATCHLIST -->
-
   <div class="section-title">
     <h2>Market watchlist</h2>
     <span>MONITORING</span>
   </div>
 
   <div class="card">
-
     <div class="market">
       <div><b>XAUUSD</b><small>Gold / US Dollar</small></div>
       <div class="market-value">Awaiting data</div>
@@ -911,12 +886,9 @@ footer {
       <div><b>NASDAQ</b><small>US technology index</small></div>
       <div class="market-value">Planned</div>
     </div>
-
   </div>
 
 </section>
-
-<!-- ANALYSIS PAGE -->
 
 <section class="page" id="analysis">
 
@@ -994,8 +966,6 @@ footer {
 
 </section>
 
-<!-- NEWS PAGE -->
-
 <section class="page" id="news">
 
   <div class="eyebrow">FUNDAMENTAL PROTECTION</div>
@@ -1039,8 +1009,6 @@ footer {
 
 </section>
 
-<!-- HISTORY PAGE -->
-
 <section class="page" id="history">
 
   <div class="eyebrow">PERFORMANCE CENTRE</div>
@@ -1080,8 +1048,6 @@ footer {
   </div>
 
 </section>
-
-<!-- PROFILE PAGE -->
 
 <section class="page" id="profile">
 
@@ -1186,6 +1152,9 @@ footer {
   "use strict";
 
   const REPORT_URL = "./test-results.json";
+
+  /* Update this value when the report generator adds or removes suites. */
+  const EXPECTED_SUITE_COUNT = 8;
 
   const elements = {
     status: document.getElementById("report-status"),
@@ -1318,7 +1287,8 @@ footer {
 
     elements.progress.style.width = percentage + "%";
 
-    const suitesValid = report.suites.length === 7 &&
+    const suitesValid =
+      report.suites.length === EXPECTED_SUITE_COUNT &&
       report.suites.every(suite =>
         suite &&
         typeof suite.name === "string" &&
@@ -1335,6 +1305,7 @@ footer {
       summary.failed === 0 &&
       summary.suitesIncomplete === 0 &&
       summary.suitesFailed === 0 &&
+      summary.suitesPassed === EXPECTED_SUITE_COUNT &&
       suitesValid;
 
     setStatus(
@@ -1376,7 +1347,7 @@ footer {
 
     elements.message.textContent =
       complete
-        ? "All seven automated test suites passed. Historical and backtest software testing only."
+        ? "All eight automated test suites passed. Historical and backtest software testing only."
         : "Report is incomplete or contains failed tests. Review the suite results above.";
 
   }
